@@ -220,6 +220,25 @@
   .di-streak-grace.available{color:var(--green);}
   .di-streak-grace.used{color:var(--gold);}
   .di-fix-link{font-size:11px; color:var(--muted); text-decoration:underline; cursor:pointer; margin-top:4px; display:inline-block;}
+  .fix-overlay{position:fixed; inset:0; background:rgba(20,10,40,0.5); display:flex; align-items:center; justify-content:center; z-index:200; padding:20px;}
+  .fix-box{background:var(--card); border-radius:20px; padding:22px 24px; max-width:400px; width:100%; max-height:85vh; overflow-y:auto;}
+  .fix-box h3{font-family:'Quicksand',sans-serif; font-size:16px; margin:0 0 4px;}
+  .fix-box .sub{font-size:11.5px; color:var(--muted); margin-bottom:14px;}
+  .fix-days-grid{display:grid; grid-template-columns:repeat(7,1fr); gap:6px; margin-bottom:14px;}
+  .fix-day{
+    aspect-ratio:1; border-radius:10px; border:1.5px solid var(--border); background:var(--bg);
+    display:flex; flex-direction:column; align-items:center; justify-content:center; cursor:pointer; font-size:10px; color:var(--muted);
+  }
+  .fix-day .num{font-weight:700; font-size:12px; color:var(--ink);}
+  .fix-day.full{background:var(--accent); border-color:var(--accent); color:#fff;}
+  .fix-day.full .num{color:#fff;}
+  .fix-day.minimum{background:var(--accent-soft); border-color:var(--accent-soft); color:#fff;}
+  .fix-day.minimum .num{color:#fff;}
+  .fix-day.missed{background:var(--red); border-color:var(--red); color:#fff;}
+  .fix-day.missed .num{color:#fff;}
+  .fix-legend{display:flex; gap:12px; flex-wrap:wrap; font-size:10.5px; color:var(--muted); margin-bottom:14px;}
+  .fix-legend span{display:flex; align-items:center; gap:4px;}
+  .fix-legend .dot{width:9px; height:9px; border-radius:50%;}
   .di-active-card h2{font-family:'Quicksand',sans-serif; font-size:19px; margin:2px 0 6px;}
   .di-checkin-row{display:flex; gap:8px; flex-wrap:wrap; margin-top:10px;}
   .di-checkin-btn{flex:1; min-width:100px; border:1.5px solid var(--border); background:#fff; border-radius:12px; padding:10px 8px; text-align:center; cursor:pointer; font-family:'Quicksand',sans-serif; font-weight:700; font-size:12.5px;}
@@ -1315,23 +1334,50 @@ function diCyclePastDay(habitId, dateStr){
 }
 
 function diFixPastDay(habitId){
-  const dateInput = prompt("Quelle date corriger ? (format JJ/MM, ex : 12/08)");
-  if(!dateInput || !dateInput.trim()) return;
-  const m = dateInput.trim().match(/^(\d{1,2})\/(\d{1,2})$/);
-  if(!m){ alert("Format non reconnu, utilise JJ/MM (ex : 12/08)."); return; }
-  const year = new Date().getFullYear();
-  const d = new Date(year, parseInt(m[2])-1, parseInt(m[1]));
-  const key = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
-  const statusInput = prompt("Statut ce jour-là : tape \"plein\", \"minimum\", \"rate\" (raté), ou laisse vide pour effacer.");
-  if(statusInput === null) return;
-  const map = {plein:'full', minimum:'minimum', rate:'missed', 'raté':'missed'};
-  const value = map[statusInput.trim().toLowerCase()];
+  const habits = diLoadHabits();
+  const habit = habits.find(h => h.id === habitId);
+  if(!habit) return;
   const log = diLoadLog();
-  if(!log[key]) log[key] = {};
-  if(!value) delete log[key][habitId]; else log[key][habitId] = value;
-  diSaveLog(log);
-  diRender();
-  renderDashboardSummary();
+
+  const overlay = document.createElement('div');
+  overlay.className = 'fix-overlay';
+  overlay.innerHTML = `
+    <div class="fix-box">
+      <h3>${habit.name}</h3>
+      <div class="sub">Tape sur un jour pour faire défiler son statut (vide → entier → minimum → raté).</div>
+      <div class="fix-days-grid" id="fixDaysGrid"></div>
+      <div class="fix-legend">
+        <span><span class="dot" style="background:var(--accent);"></span> entier</span>
+        <span><span class="dot" style="background:var(--accent-soft);"></span> minimum</span>
+        <span><span class="dot" style="background:var(--red);"></span> raté</span>
+        <span><span class="dot" style="background:var(--missed);opacity:.5;"></span> vide</span>
+      </div>
+      <button class="btn btn-outline btn-small" id="fixCloseBtn" style="width:100%;">Fermer</button>
+    </div>
+  `;
+  document.body.appendChild(overlay);
+  overlay.onclick = (e) => { if(e.target === overlay) overlay.remove(); };
+  document.getElementById('fixCloseBtn').onclick = () => overlay.remove();
+
+  function renderGrid(){
+    const grid = document.getElementById('fixDaysGrid');
+    const freshLog = diLoadLog();
+    let html = '';
+    for(let i=20; i>=0; i--){
+      const key = dateKeyFor(i);
+      const entry = freshLog[key] && freshLog[key][habitId];
+      const d = new Date(); d.setDate(d.getDate()-i);
+      html += `<div class="fix-day${entry?' '+entry:''}" onclick="diModalCycleDay('${habitId}','${key}')"><div class="num">${d.getDate()}</div><div>${d.toLocaleDateString('fr-FR',{month:'2-digit'})}</div></div>`;
+    }
+    grid.innerHTML = html;
+  }
+  window.__diFixGridRender = renderGrid;
+  renderGrid();
+}
+
+function diModalCycleDay(habitId, dateStr){
+  diCyclePastDay(habitId, dateStr);
+  if(window.__diFixGridRender) window.__diFixGridRender();
 }
 
 function diUnlockNext(){
