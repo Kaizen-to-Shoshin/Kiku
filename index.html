@@ -1073,7 +1073,16 @@ function diRender(){
 
   const overview = document.getElementById('diHabitsOverview');
   const sorted = [...habits].sort((a,b) => ({active:0,queued:1}[a.status]??2) - ({active:0,queued:1}[b.status]??2));
-  overview.innerHTML = sorted.map(h => `<div class="di-habit-row"><span>${h.name}</span><span class="di-status-tag ${h.status}">${h.status==='active'?'active':'en attente'}</span></div>`).join('') || '<div style="font-size:12px;color:var(--muted);">Aucune habitude.</div>';
+  overview.innerHTML = sorted.map(h => `
+    <div class="di-habit-row">
+      <span>${h.name}</span>
+      <span style="display:flex;align-items:center;gap:8px;">
+        <span class="di-status-tag ${h.status}">${h.status==='active'?'active':'en attente'}</span>
+        ${h.status==='queued' ? `<span style="cursor:pointer;color:var(--accent);text-decoration:underline;font-size:11px;" onclick="diActivateHabit('${h.id}')">activer</span>` : ''}
+        <span style="cursor:pointer;color:var(--muted);text-decoration:underline;font-size:11px;" onclick="diEditHabit('${h.id}')">modifier</span>
+      </span>
+    </div>
+  `).join('') || '<div style="font-size:12px;color:var(--muted);">Aucune habitude.</div>';
 
   diRenderReflectHistory();
 }
@@ -1109,6 +1118,33 @@ function diUnlockNext(){
   if(queued.length===0) return;
   queued[0].status = 'active';
   queued[0].activatedAt = Date.now();
+  diSaveHabits(habits);
+  diRender();
+}
+
+function diActivateHabit(id){
+  const habits = diLoadHabits();
+  const h = habits.find(x => x.id === id);
+  if(!h) return;
+  h.status = 'active';
+  h.activatedAt = Date.now();
+  diSaveHabits(habits);
+  diRender();
+}
+
+function diEditHabit(id){
+  const habits = diLoadHabits();
+  const h = habits.find(x => x.id === id);
+  if(!h) return;
+  const newName = prompt("Nom de l'habitude :", h.name);
+  if(newName === null) return;
+  const newFull = prompt("Version pleine (ce que tu veux tenir) :", h.full);
+  if(newFull === null) return;
+  const newMin = prompt("Version minimum (jour difficile) :", h.min);
+  if(newMin === null) return;
+  h.name = newName.trim() || h.name;
+  h.full = newFull.trim() || h.full;
+  h.min = newMin.trim() || h.min;
   diSaveHabits(habits);
   diRender();
 }
