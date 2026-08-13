@@ -358,7 +358,12 @@ function todayKey(){ const d=new Date(); return `${d.getFullYear()}-${String(d.g
 function dateKeyFor(offsetDays){ const d=new Date(); d.setDate(d.getDate()-offsetDays); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; }
 function genId(prefix){ return (prefix||"id") + Date.now().toString(36) + Math.floor(Math.random()*1000); }
 function loadJSON(key, fallback){ try { const v = JSON.parse(localStorage.getItem(key)); return v===null||v===undefined ? fallback : v; } catch(e){ return fallback; } }
-function saveJSON(key, val){ try { localStorage.setItem(key, JSON.stringify(val)); } catch(e){} if(window.__cloudSync) window.__cloudSync(); }
+const EDIT_TS_KEY = "constance_last_edit_ts_v1";
+function saveJSON(key, val){
+  try { localStorage.setItem(key, JSON.stringify(val)); } catch(e){}
+  try { localStorage.setItem(EDIT_TS_KEY, String(Date.now())); } catch(e){}
+  if(window.__cloudSync) window.__cloudSync();
+}
 
 function getConfig(){ return loadJSON(CFG_KEY, null); }
 function fmtMoney(n){
@@ -498,13 +503,14 @@ function renderDashboardSummary(){
   document.getElementById('dashPlanningBig').textContent = upcoming ? upcoming.name : "Rien en cours";
   document.getElementById('dashPlanningSub').textContent = upcoming ? `avant le ${upcoming.end.toLocaleDateString('fr-FR',{day:'2-digit',month:'2-digit'})}` : "ajoute un projet dans l'onglet Planner";
 
-  // Discipline : habitude active + statut du jour
+  // Discipline : habitudes actives + statut du jour
   const dHabits = loadJSON(DI_HABITS_KEY, []);
-  const active = dHabits.find(h => h.status === 'active');
+  const activeHabits = dHabits.filter(h => h.status === 'active');
   const log = loadJSON(DI_LOG_KEY, {});
-  const todayEntry = active ? (log[todayKey()] && log[todayKey()][active.id]) : null;
-  document.getElementById('dashDisciplineBig').textContent = active ? active.name : "Aucune active";
-  document.getElementById('dashDisciplineSub').textContent = active ? (todayEntry ? (todayEntry==='full'?'Fait aujourd\'hui ✓':todayEntry==='minimum'?'Minimum fait ⚬':'Raté aujourd\'hui') : "Pas encore coché aujourd'hui") : "";
+  const today = todayKey();
+  const doneCount = activeHabits.filter(h => log[today] && log[today][h.id]).length;
+  document.getElementById('dashDisciplineBig').textContent = activeHabits.length === 0 ? "Aucune active" : (activeHabits.length === 1 ? activeHabits[0].name : `${activeHabits.length} habitudes actives`);
+  document.getElementById('dashDisciplineSub').textContent = activeHabits.length === 0 ? "" : `${doneCount}/${activeHabits.length} cochée(s) aujourd'hui`;
 
   // Finances : solde
   const txs = loadJSON(FI_TX_KEY, []);
@@ -972,12 +978,7 @@ function diSaveLog(l){ saveJSON(DI_LOG_KEY, l); }
 
 function initDiscipline(){
   document.getElementById('tab-discipline').innerHTML = `
-    <div class="di-active-card" id="diActiveCard"></div>
-    <div class="di-stats-row" id="diStatsRow"></div>
-    <div class="card">
-      <div class="section-title">Les 4 dernières semaines</div>
-      <div class="di-heatmap" id="diHeatmap"></div>
-    </div>
+    <div id="diActiveHabitsContainer"></div>
     <div class="card di-unlock-box" id="diUnlockBox"></div>
     <div class="card">
       <div class="section-title">Toutes tes habitudes</div>
@@ -996,7 +997,7 @@ function initDiscipline(){
   diRender();
 }
 
-function diActive(habits){ return habits.find(h => h.status === 'active'); }
+function diActiveList(habits){ return habits.filter(h => h.status === 'active').sort((a,b)=>a.order-b.order); }
 
 function diStats(habitId, log){
   let consistency=0, full=0, brokenC=false, brokenF=false, totalEver=0;
@@ -1017,61 +1018,57 @@ function diStats(habitId, log){
 function diRender(){
   const habits = diLoadHabits();
   const log = diLoadLog();
-  const active = diActive(habits);
+  const activeList = diActiveList(habits);
   const today = todayKey();
-  const todayEntry = active ? (log[today] && log[today][active.id]) : null;
+  const container = document.getElementById('diActiveHabitsContainer');
 
-  const card = document.getElementById('diActiveCard');
-  if(!active){
-    card.innerHTML = `<div style="font-size:11px;text-transform:uppercase;color:var(--pink-dark);font-weight:700;">Aucune habitude active</div><h2>Ajoute-en une pour commencer</h2>`;
+  if(activeList.length === 0){
+    container.innerHTML = `<div class="di-active-card"><div style="font-size:11px;text-transform:uppercase;color:var(--pink-dark);font-weight:700;">Aucune habitude active</div><h2>Ajoute-en une pour commencer</h2></div>`;
   } else {
-    card.innerHTML = `
-      <div style="font-size:11px;text-transform:uppercase;color:var(--pink-dark);font-weight:700;">Habitude active</div>
-      <h2>${active.name}</h2>
-      <div style="font-size:13px;margin-bottom:6px;">${active.full}</div>
-      <div style="font-size:12px;color:var(--muted);font-style:italic;margin-bottom:12px;">Jour difficile ? Minimum : ${active.min}</div>
-      <div class="di-checkin-row">
-        <div class="di-checkin-btn full ${todayEntry==='full'?'chosen':''}" onclick="diCheckIn('${active.id}','full')">✓ Fait en entier</div>
-        <div class="di-checkin-btn minimum ${todayEntry==='minimum'?'chosen':''}" onclick="diCheckIn('${active.id}','minimum')">⚬ Minimum</div>
-        <div class="di-checkin-btn missed ${todayEntry==='missed'?'chosen':''}" onclick="diCheckIn('${active.id}','missed')">✕ Raté</div>
-      </div>
-    `;
-  }
-
-  const statsRow = document.getElementById('diStatsRow');
-  if(active){
-    const s = diStats(active.id, log);
-    statsRow.innerHTML = `
-      <div class="di-stat-box"><div class="num">${s.consistency}</div><div class="lbl">jours de constance</div></div>
-      <div class="di-stat-box"><div class="num">${s.full}</div><div class="lbl">jours en version pleine</div></div>
-      <div class="di-stat-box"><div class="num">${s.totalEver}</div><div class="lbl">jours actifs au total</div></div>
-    `;
-  } else { statsRow.innerHTML = ''; }
-
-  const heat = document.getElementById('diHeatmap');
-  heat.innerHTML = '';
-  if(active){
-    for(let i=27;i>=0;i--){
-      const key = dateKeyFor(i);
-      const entry = log[key] && log[key][active.id];
-      const cell = document.createElement('div');
-      cell.className = 'di-heatmap-cell' + (entry ? ' '+entry : '');
-      cell.title = new Date(key).toLocaleDateString('fr-FR',{day:'2-digit',month:'2-digit'}) + (i===0 ? " (aujourd'hui)" : '') + " — clique pour corriger";
-      cell.style.cursor = 'pointer';
-      cell.onclick = () => diCyclePastDay(active.id, key);
-      heat.appendChild(cell);
-    }
+    container.innerHTML = activeList.map(active => {
+      const todayEntry = log[today] && log[today][active.id];
+      const s = diStats(active.id, log);
+      let heatCells = '';
+      for(let i=27;i>=0;i--){
+        const key = dateKeyFor(i);
+        const entry = log[key] && log[key][active.id];
+        heatCells += `<div class="di-heatmap-cell${entry?' '+entry:''}" style="cursor:pointer;" title="${new Date(key).toLocaleDateString('fr-FR',{day:'2-digit',month:'2-digit'})}${i===0?" (aujourd'hui)":''} — clique pour corriger" onclick="diCyclePastDay('${active.id}','${key}')"></div>`;
+      }
+      return `
+        <div class="di-active-card" style="margin-bottom:14px;">
+          <div style="font-size:11px;text-transform:uppercase;color:var(--pink-dark);font-weight:700;">Habitude active</div>
+          <h2>${active.name}</h2>
+          <div style="font-size:13px;margin-bottom:6px;">${active.full}</div>
+          <div style="font-size:12px;color:var(--muted);font-style:italic;margin-bottom:12px;">Jour difficile ? Minimum : ${active.min}</div>
+          <div class="di-checkin-row">
+            <div class="di-checkin-btn full ${todayEntry==='full'?'chosen':''}" onclick="diCheckIn('${active.id}','full')">✓ Fait en entier</div>
+            <div class="di-checkin-btn minimum ${todayEntry==='minimum'?'chosen':''}" onclick="diCheckIn('${active.id}','minimum')">⚬ Minimum</div>
+            <div class="di-checkin-btn missed ${todayEntry==='missed'?'chosen':''}" onclick="diCheckIn('${active.id}','missed')">✕ Raté</div>
+          </div>
+          <div class="di-stats-row" style="margin-top:14px;">
+            <div class="di-stat-box"><div class="num">${s.consistency}</div><div class="lbl">jours de constance</div></div>
+            <div class="di-stat-box"><div class="num">${s.full}</div><div class="lbl">jours en version pleine</div></div>
+            <div class="di-stat-box"><div class="num">${s.totalEver}</div><div class="lbl">jours actifs au total</div></div>
+          </div>
+          <div style="margin-top:10px;">
+            <div class="section-title" style="font-size:12px;">Les 4 dernières semaines</div>
+            <div class="di-heatmap">${heatCells}</div>
+          </div>
+        </div>
+      `;
+    }).join('');
   }
 
   const unlockBox = document.getElementById('diUnlockBox');
   const queued = habits.filter(h => h.status==='queued').sort((a,b)=>a.order-b.order);
-  if(active && queued.length>0){
-    const s = diStats(active.id, log);
-    unlockBox.innerHTML = `<div style="font-size:13px;color:var(--muted);margin-bottom:8px;">Prochaine : <b>${queued[0].name}</b>. Recommandé après ${DI_UNLOCK_THRESHOLD} jours de constance (tu en es à ${s.totalEver}).</div><button class="btn btn-primary btn-small" onclick="diUnlockNext()">Je me sens prête</button>`;
-  } else if(!active && queued.length>0){
+  if(queued.length === 0){
+    unlockBox.innerHTML = `<div style="font-size:13px;color:var(--muted);">Toutes tes habitudes sont actives.</div>`;
+  } else if(activeList.length === 0){
     unlockBox.innerHTML = `<button class="btn btn-primary btn-small" onclick="diUnlockNext()">Activer : ${queued[0].name}</button>`;
   } else {
-    unlockBox.innerHTML = `<div style="font-size:13px;color:var(--muted);">Toutes tes habitudes sont actives.</div>`;
+    const ref = activeList[activeList.length-1];
+    const s = diStats(ref.id, log);
+    unlockBox.innerHTML = `<div style="font-size:13px;color:var(--muted);margin-bottom:8px;">Prochaine dans la file : <b>${queued[0].name}</b>. Recommandé après ${DI_UNLOCK_THRESHOLD} jours de constance sur ta dernière habitude activée (tu en es à ${s.totalEver}). Tu peux aussi l'activer tout de suite si tu préfères suivre plusieurs habitudes en même temps.</div><button class="btn btn-primary btn-small" onclick="diUnlockNext()">Activer maintenant : ${queued[0].name}</button>`;
   }
 
   const overview = document.getElementById('diHabitsOverview');
@@ -1080,6 +1077,7 @@ function diRender(){
 
   diRenderReflectHistory();
 }
+
 
 function diCheckIn(id, value){
   const log = diLoadLog();
@@ -1531,14 +1529,23 @@ boot();
 
   let currentUid = null, unsubscribeSnapshot = null, pushTimer = null, applyingRemote = false;
   function docRefFor(uid){ return doc(db, "constance", uid); }
+  function localEditTs(){ return parseInt(localStorage.getItem("constance_last_edit_ts_v1")) || 0; }
 
   async function firstSyncOnLogin(uid){
     const ref = docRefFor(uid);
     const snap = await getDoc(ref);
     if(snap.exists()){
-      applyingRemote = true;
-      window.__applyRemoteState(snap.data());
-      applyingRemote = false;
+      const data = snap.data();
+      // Ne jamais laisser une donnée distante plus ancienne écraser une modif locale plus récente
+      // (ex : coché une habitude puis fermé l'onglet avant l'envoi vers le cloud).
+      if((data._updatedAt || 0) >= localEditTs()){
+        applyingRemote = true;
+        window.__applyRemoteState(data);
+        applyingRemote = false;
+      } else {
+        // Le local est plus frais que le cloud : on repousse notre version tout de suite.
+        await flushPush();
+      }
     } else {
       const local = window.__getLocalState();
       if(local.config) await setDoc(ref, local);
@@ -1547,21 +1554,36 @@ boot();
   function listenRemote(uid){
     unsubscribeSnapshot = onSnapshot(docRefFor(uid), (snap) => {
       if(!snap.exists()) return;
+      const data = snap.data();
+      if((data._updatedAt || 0) < localEditTs()) return; // distant plus vieux que notre dernière modif locale : on ignore
       applyingRemote = true;
-      window.__applyRemoteState(snap.data());
+      window.__applyRemoteState(data);
       applyingRemote = false;
     }, () => setStatus("Synchro interrompue — mode local", "error"));
+  }
+
+  async function flushPush(){
+    if(!currentUid) return;
+    try {
+      const payload = window.__getLocalState();
+      payload._updatedAt = localEditTs() || Date.now();
+      await setDoc(docRefFor(currentUid), payload);
+      setStatus("Synchronisé ✓", "on");
+    } catch(e){ setStatus("Échec de synchro — réessaie plus tard", "error"); }
   }
   window.__cloudSync = function(){
     if(!currentUid || applyingRemote) return;
     if(pushTimer) clearTimeout(pushTimer);
-    pushTimer = setTimeout(async () => {
-      try {
-        await setDoc(docRefFor(currentUid), window.__getLocalState());
-        setStatus("Synchronisé ✓", "on");
-      } catch(e){ setStatus("Échec de synchro — réessaie plus tard", "error"); }
-    }, 800);
+    pushTimer = setTimeout(flushPush, 300);
   };
+  // Filet de sécurité : si l'utilisateur quitte l'onglet / la page juste après une modif,
+  // on envoie immédiatement au lieu d'attendre le délai, pour ne jamais perdre un check-in.
+  document.addEventListener('visibilitychange', () => {
+    if(document.visibilityState === 'hidden' && pushTimer){ clearTimeout(pushTimer); pushTimer = null; flushPush(); }
+  });
+  window.addEventListener('pagehide', () => {
+    if(pushTimer){ clearTimeout(pushTimer); pushTimer = null; flushPush(); }
+  });
 
   onAuthStateChanged(auth, async (user) => {
     if(user){
