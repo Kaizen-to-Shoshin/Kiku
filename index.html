@@ -171,6 +171,19 @@
   .di-matrix-dot.minimum{background:var(--accent-soft); opacity:1;}
   .di-matrix-dot.missed{background:var(--red); opacity:.6;}
   .di-matrix-scroll{overflow-x:auto;}
+  .di-streaks-grid{display:flex; flex-direction:column; gap:12px;}
+  .di-streak-row{display:flex; align-items:center; gap:16px; border-bottom:1px solid var(--border); padding-bottom:12px;}
+  .di-streak-row:last-child{border-bottom:none; padding-bottom:0;}
+  .di-streak-num-wrap{display:flex; flex-direction:column; align-items:center; min-width:64px;}
+  .di-streak-num{font-family:'Quicksand',sans-serif; font-size:32px; font-weight:700; color:var(--accent); line-height:1;}
+  .di-streak-num.broken{color:var(--muted);}
+  .di-streak-lbl{font-size:9.5px; color:var(--muted); text-transform:uppercase; letter-spacing:.03em;}
+  .di-streak-info{flex:1;}
+  .di-streak-info .name{font-family:'Quicksand',sans-serif; font-weight:700; font-size:14px;}
+  .di-streak-grace{font-size:11px; margin-top:2px;}
+  .di-streak-grace.available{color:var(--green);}
+  .di-streak-grace.used{color:var(--gold);}
+  .di-fix-link{font-size:11px; color:var(--muted); text-decoration:underline; cursor:pointer; margin-top:4px; display:inline-block;}
   .di-active-card h2{font-family:'Quicksand',sans-serif; font-size:19px; margin:2px 0 6px;}
   .di-checkin-row{display:flex; gap:8px; flex-wrap:wrap; margin-top:10px;}
   .di-checkin-btn{flex:1; min-width:100px; border:1.5px solid var(--border); background:#fff; border-radius:12px; padding:10px 8px; text-align:center; cursor:pointer; font-family:'Quicksand',sans-serif; font-weight:700; font-size:12.5px;}
@@ -1002,9 +1015,8 @@ function initDiscipline(){
   document.getElementById('tab-discipline').innerHTML = `
     <div class="card di-active-card" id="diCheckinCard"></div>
     <div class="card">
-      <div class="section-title">Les 4 dernières semaines</div>
-      <div class="di-matrix-scroll"><table class="di-matrix" id="diMatrixTable"></table></div>
-      <div style="font-size:10.5px;color:var(--muted);margin-top:8px;">Clique un point pour corriger un jour.</div>
+      <div class="section-title">Tes séries</div>
+      <div class="di-streaks-grid" id="diStreaksGrid"></div>
     </div>
     <div class="card di-unlock-box" id="diUnlockBox"></div>
     <div class="card">
@@ -1026,20 +1038,28 @@ function initDiscipline(){
 
 function diActiveList(habits){ return habits.filter(h => h.status === 'active').sort((a,b)=>a.order-b.order); }
 
+const DI_GRACE_DAYS = 1; // nombre de jours ratés "pardonnés" par série avant qu'elle retombe à zéro
+
 function diStats(habitId, log){
-  let consistency=0, full=0, brokenC=false, brokenF=false, totalEver=0;
+  // Ancienne métrique gardée pour le calcul du seuil de déblocage (jours actifs au total, sans grâce)
+  let totalEver = 0;
+  Object.keys(log).forEach(k => { const e=log[k][habitId]; if(e==='full'||e==='minimum') totalEver++; });
+  return {totalEver};
+}
+
+function diStreakWithGrace(habitId, log){
+  let streak = 0;
+  let grace = DI_GRACE_DAYS;
   for(let i=0;i<3650;i++){
     const key = dateKeyFor(i);
     const entry = log[key] && log[key][habitId];
-    if(!entry){ if(i===0) continue; break; }
-    if(entry === 'missed') brokenC = true;
-    if(!brokenC){ consistency++; }
-    if(entry !== 'full') brokenF = true;
-    if(!brokenF) full++;
-    if(brokenC) break;
+    if(i===0 && !entry) continue; // aujourd'hui pas encore rempli : ne casse rien, ne compte pas encore
+    if(entry === 'full' || entry === 'minimum'){ streak++; continue; }
+    // ici : 'missed' ou aucune entrée pour un jour passé -> considéré comme raté
+    if(grace > 0){ grace--; streak++; continue; }
+    break;
   }
-  Object.keys(log).forEach(k => { const e=log[k][habitId]; if(e==='full'||e==='minimum') totalEver++; });
-  return {consistency, full, totalEver};
+  return { streak, graceRemaining: grace, graceUsed: DI_GRACE_DAYS - grace };
 }
 
 function diRender(){
@@ -1076,30 +1096,30 @@ function diRender(){
     `;
   }
 
-  /* ---- Matrice commune : une ligne par habitude, une colonne par jour ---- */
-  const matrixTable = document.getElementById('diMatrixTable');
+  /* ---- Séries : un gros chiffre par habitude, avec grâce ---- */
+  const streaksGrid = document.getElementById('diStreaksGrid');
   if(activeList.length === 0){
-    matrixTable.innerHTML = '';
+    streaksGrid.innerHTML = '<div style="font-size:12px;color:var(--muted);">Aucune habitude active.</div>';
   } else {
-    let daysHeader = '<tr><th></th>';
-    for(let i=27;i>=0;i--){
-      const d = new Date(); d.setDate(d.getDate()-i);
-      daysHeader += `<th>${i % 7 === 0 ? d.toLocaleDateString('fr-FR',{day:'2-digit',month:'2-digit'}) : ''}</th>`;
-    }
-    daysHeader += '</tr>';
-
-    let rows = activeList.map(h => {
-      let cells = `<td class="di-matrix-label" title="${h.name}">${h.name}</td>`;
-      for(let i=27;i>=0;i--){
-        const key = dateKeyFor(i);
-        const entry = log[key] && log[key][h.id];
-        const label = new Date(key).toLocaleDateString('fr-FR',{day:'2-digit',month:'2-digit'}) + (i===0?" (aujourd'hui)":'');
-        cells += `<td><div class="di-matrix-dot${entry?' '+entry:''}" title="${h.name} — ${label}" onclick="diCyclePastDay('${h.id}','${key}')"></div></td>`;
-      }
-      return `<tr>${cells}</tr>`;
+    streaksGrid.innerHTML = activeList.map(h => {
+      const st = diStreakWithGrace(h.id, log);
+      const graceLabel = st.graceRemaining > 0
+        ? `<span class="di-streak-grace available">🛡️ 1 jour de grâce dispo</span>`
+        : `<span class="di-streak-grace used">🛡️ grâce déjà utilisée — le prochain jour raté remet à 0</span>`;
+      return `
+        <div class="di-streak-row">
+          <div class="di-streak-num-wrap">
+            <div class="di-streak-num${st.streak===0?' broken':''}">${st.streak}</div>
+            <div class="di-streak-lbl">jours</div>
+          </div>
+          <div class="di-streak-info">
+            <div class="name">${h.name}</div>
+            <div class="di-streak-grace">${graceLabel}</div>
+            <span class="di-fix-link" onclick="diFixPastDay('${h.id}')">corriger un jour passé</span>
+          </div>
+        </div>
+      `;
     }).join('');
-
-    matrixTable.innerHTML = daysHeader + rows;
   }
 
   const unlockBox = document.getElementById('diUnlockBox');
@@ -1150,6 +1170,26 @@ function diCyclePastDay(habitId, dateStr){
   const order = [undefined, 'full', 'minimum', 'missed'];
   const next = order[(order.indexOf(current) + 1) % order.length];
   if(next === undefined) delete log[dateStr][habitId]; else log[dateStr][habitId] = next;
+  diSaveLog(log);
+  diRender();
+  renderDashboardSummary();
+}
+
+function diFixPastDay(habitId){
+  const dateInput = prompt("Quelle date corriger ? (format JJ/MM, ex : 12/08)");
+  if(!dateInput || !dateInput.trim()) return;
+  const m = dateInput.trim().match(/^(\d{1,2})\/(\d{1,2})$/);
+  if(!m){ alert("Format non reconnu, utilise JJ/MM (ex : 12/08)."); return; }
+  const year = new Date().getFullYear();
+  const d = new Date(year, parseInt(m[2])-1, parseInt(m[1]));
+  const key = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+  const statusInput = prompt("Statut ce jour-là : tape \"plein\", \"minimum\", \"rate\" (raté), ou laisse vide pour effacer.");
+  if(statusInput === null) return;
+  const map = {plein:'full', minimum:'minimum', rate:'missed', 'raté':'missed'};
+  const value = map[statusInput.trim().toLowerCase()];
+  const log = diLoadLog();
+  if(!log[key]) log[key] = {};
+  if(!value) delete log[key][habitId]; else log[key][habitId] = value;
   diSaveLog(log);
   diRender();
   renderDashboardSummary();
