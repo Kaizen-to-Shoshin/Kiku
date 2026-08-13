@@ -149,6 +149,28 @@
 
   /* ---------- Discipline tab ---------- */
   .di-active-card{background:linear-gradient(135deg, var(--pink-light), var(--gold-light)); border:1px solid var(--border); border-radius:var(--radius); padding:18px 20px; margin-bottom:14px;}
+  .di-checkin-list{display:flex; flex-direction:column; gap:10px;}
+  .di-checkin-item{border-bottom:1px solid var(--border); padding-bottom:10px;}
+  .di-checkin-item:last-child{border-bottom:none; padding-bottom:0;}
+  .di-checkin-item-head{display:flex; justify-content:space-between; align-items:baseline; gap:10px; margin-bottom:6px;}
+  .di-checkin-item-head .name{font-family:'Quicksand',sans-serif; font-weight:700; font-size:14px;}
+  .di-checkin-item-head .desc{font-size:11.5px; color:var(--muted);}
+  .di-checkin-mini-row{display:flex; gap:6px;}
+  .di-checkin-mini-btn{
+    flex:1; border:1.5px solid var(--border); background:var(--bg); border-radius:9px; padding:7px 4px;
+    text-align:center; cursor:pointer; font-size:11px; font-weight:700; font-family:'Quicksand',sans-serif;
+  }
+  .di-checkin-mini-btn.full.chosen{background:var(--green-light); border-color:var(--green);}
+  .di-checkin-mini-btn.minimum.chosen{background:var(--gold-light); border-color:var(--gold);}
+  .di-checkin-mini-btn.missed.chosen{background:var(--red-light); border-color:var(--red);}
+  .di-matrix{width:100%; border-collapse:separate; border-spacing:3px;}
+  .di-matrix th{font-size:9px; color:var(--muted); font-weight:600; text-align:center; padding-bottom:4px;}
+  .di-matrix td.di-matrix-label{font-size:11.5px; font-weight:600; text-align:right; padding-right:8px; white-space:nowrap; max-width:110px; overflow:hidden; text-overflow:ellipsis;}
+  .di-matrix-dot{width:14px; height:14px; border-radius:50%; background:var(--missed); opacity:.5; cursor:pointer;}
+  .di-matrix-dot.full{background:var(--accent); opacity:1;}
+  .di-matrix-dot.minimum{background:var(--accent-soft); opacity:1;}
+  .di-matrix-dot.missed{background:var(--red); opacity:.6;}
+  .di-matrix-scroll{overflow-x:auto;}
   .di-active-card h2{font-family:'Quicksand',sans-serif; font-size:19px; margin:2px 0 6px;}
   .di-checkin-row{display:flex; gap:8px; flex-wrap:wrap; margin-top:10px;}
   .di-checkin-btn{flex:1; min-width:100px; border:1.5px solid var(--border); background:#fff; border-radius:12px; padding:10px 8px; text-align:center; cursor:pointer; font-family:'Quicksand',sans-serif; font-weight:700; font-size:12.5px;}
@@ -978,7 +1000,12 @@ function diSaveLog(l){ saveJSON(DI_LOG_KEY, l); }
 
 function initDiscipline(){
   document.getElementById('tab-discipline').innerHTML = `
-    <div id="diActiveHabitsContainer"></div>
+    <div class="card di-active-card" id="diCheckinCard"></div>
+    <div class="card">
+      <div class="section-title">Les 4 dernières semaines</div>
+      <div class="di-matrix-scroll"><table class="di-matrix" id="diMatrixTable"></table></div>
+      <div style="font-size:10.5px;color:var(--muted);margin-top:8px;">Clique un point pour corriger un jour.</div>
+    </div>
     <div class="card di-unlock-box" id="diUnlockBox"></div>
     <div class="card">
       <div class="section-title">Toutes tes habitudes</div>
@@ -1020,43 +1047,59 @@ function diRender(){
   const log = diLoadLog();
   const activeList = diActiveList(habits);
   const today = todayKey();
-  const container = document.getElementById('diActiveHabitsContainer');
 
+  /* ---- Carte unique de check-in, une ligne compacte par habitude ---- */
+  const checkinCard = document.getElementById('diCheckinCard');
   if(activeList.length === 0){
-    container.innerHTML = `<div class="di-active-card"><div style="font-size:11px;text-transform:uppercase;color:var(--pink-dark);font-weight:700;">Aucune habitude active</div><h2>Ajoute-en une pour commencer</h2></div>`;
+    checkinCard.innerHTML = `<div style="font-size:11px;text-transform:uppercase;color:var(--pink-dark);font-weight:700;">Aucune habitude active</div><h2>Ajoute-en une pour commencer</h2>`;
   } else {
-    container.innerHTML = activeList.map(active => {
-      const todayEntry = log[today] && log[today][active.id];
-      const s = diStats(active.id, log);
-      let heatCells = '';
+    checkinCard.innerHTML = `
+      <div style="font-size:11px;text-transform:uppercase;color:var(--pink-dark);font-weight:700;margin-bottom:10px;">Aujourd'hui</div>
+      <div class="di-checkin-list">
+        ${activeList.map(h => {
+          const todayEntry = log[today] && log[today][h.id];
+          return `
+            <div class="di-checkin-item">
+              <div class="di-checkin-item-head">
+                <span class="name">${h.name}</span>
+                <span class="desc">min. : ${h.min}</span>
+              </div>
+              <div class="di-checkin-mini-row">
+                <div class="di-checkin-mini-btn full ${todayEntry==='full'?'chosen':''}" onclick="diCheckIn('${h.id}','full')">✓ Entier</div>
+                <div class="di-checkin-mini-btn minimum ${todayEntry==='minimum'?'chosen':''}" onclick="diCheckIn('${h.id}','minimum')">⚬ Minimum</div>
+                <div class="di-checkin-mini-btn missed ${todayEntry==='missed'?'chosen':''}" onclick="diCheckIn('${h.id}','missed')">✕ Raté</div>
+              </div>
+            </div>
+          `;
+        }).join('')}
+      </div>
+    `;
+  }
+
+  /* ---- Matrice commune : une ligne par habitude, une colonne par jour ---- */
+  const matrixTable = document.getElementById('diMatrixTable');
+  if(activeList.length === 0){
+    matrixTable.innerHTML = '';
+  } else {
+    let daysHeader = '<tr><th></th>';
+    for(let i=27;i>=0;i--){
+      const d = new Date(); d.setDate(d.getDate()-i);
+      daysHeader += `<th>${i % 7 === 0 ? d.toLocaleDateString('fr-FR',{day:'2-digit',month:'2-digit'}) : ''}</th>`;
+    }
+    daysHeader += '</tr>';
+
+    let rows = activeList.map(h => {
+      let cells = `<td class="di-matrix-label" title="${h.name}">${h.name}</td>`;
       for(let i=27;i>=0;i--){
         const key = dateKeyFor(i);
-        const entry = log[key] && log[key][active.id];
-        heatCells += `<div class="di-heatmap-cell${entry?' '+entry:''}" style="cursor:pointer;" title="${new Date(key).toLocaleDateString('fr-FR',{day:'2-digit',month:'2-digit'})}${i===0?" (aujourd'hui)":''} — clique pour corriger" onclick="diCyclePastDay('${active.id}','${key}')"></div>`;
+        const entry = log[key] && log[key][h.id];
+        const label = new Date(key).toLocaleDateString('fr-FR',{day:'2-digit',month:'2-digit'}) + (i===0?" (aujourd'hui)":'');
+        cells += `<td><div class="di-matrix-dot${entry?' '+entry:''}" title="${h.name} — ${label}" onclick="diCyclePastDay('${h.id}','${key}')"></div></td>`;
       }
-      return `
-        <div class="di-active-card" style="margin-bottom:14px;">
-          <div style="font-size:11px;text-transform:uppercase;color:var(--pink-dark);font-weight:700;">Habitude active</div>
-          <h2>${active.name}</h2>
-          <div style="font-size:13px;margin-bottom:6px;">${active.full}</div>
-          <div style="font-size:12px;color:var(--muted);font-style:italic;margin-bottom:12px;">Jour difficile ? Minimum : ${active.min}</div>
-          <div class="di-checkin-row">
-            <div class="di-checkin-btn full ${todayEntry==='full'?'chosen':''}" onclick="diCheckIn('${active.id}','full')">✓ Fait en entier</div>
-            <div class="di-checkin-btn minimum ${todayEntry==='minimum'?'chosen':''}" onclick="diCheckIn('${active.id}','minimum')">⚬ Minimum</div>
-            <div class="di-checkin-btn missed ${todayEntry==='missed'?'chosen':''}" onclick="diCheckIn('${active.id}','missed')">✕ Raté</div>
-          </div>
-          <div class="di-stats-row" style="margin-top:14px;">
-            <div class="di-stat-box"><div class="num">${s.consistency}</div><div class="lbl">jours de constance</div></div>
-            <div class="di-stat-box"><div class="num">${s.full}</div><div class="lbl">jours en version pleine</div></div>
-            <div class="di-stat-box"><div class="num">${s.totalEver}</div><div class="lbl">jours actifs au total</div></div>
-          </div>
-          <div style="margin-top:10px;">
-            <div class="section-title" style="font-size:12px;">Les 4 dernières semaines</div>
-            <div class="di-heatmap">${heatCells}</div>
-          </div>
-        </div>
-      `;
+      return `<tr>${cells}</tr>`;
     }).join('');
+
+    matrixTable.innerHTML = daysHeader + rows;
   }
 
   const unlockBox = document.getElementById('diUnlockBox');
