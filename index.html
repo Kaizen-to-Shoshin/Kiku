@@ -1205,15 +1205,17 @@ function diStats(habitId, log){
   return {totalEver};
 }
 
-function diStreakWithGrace(habitId, log){
+function diStreakWithGrace(habit, log){
   let streak = 0;
   let grace = DI_GRACE_DAYS;
+  const activatedKey = habit.activatedAt ? (d => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`)(new Date(habit.activatedAt)) : null;
   for(let i=0;i<3650;i++){
     const key = dateKeyFor(i);
-    const entry = log[key] && log[key][habitId];
+    if(activatedKey && key < activatedKey) break; // ne jamais compter/pénaliser des jours antérieurs à l'activation de l'habitude
+    const entry = log[key] && log[key][habit.id];
     if(i===0 && !entry) continue; // aujourd'hui pas encore rempli : ne casse rien, ne compte pas encore
     if(entry === 'full' || entry === 'minimum'){ streak++; continue; }
-    // ici : 'missed' ou aucune entrée pour un jour passé -> considéré comme raté
+    // ici : 'missed' ou aucune entrée pour un jour passé (depuis l'activation) -> considéré comme raté
     if(grace > 0){ grace--; streak++; continue; }
     break;
   }
@@ -1260,7 +1262,7 @@ function diRender(){
     streaksGrid.innerHTML = '<div style="font-size:12px;color:var(--muted);">Aucune habitude active.</div>';
   } else {
     streaksGrid.innerHTML = activeList.map(h => {
-      const st = diStreakWithGrace(h.id, log);
+      const st = diStreakWithGrace(h, log);
       const graceLabel = st.graceRemaining > 0
         ? `<span class="di-streak-grace available">🛡️ 1 jour de grâce dispo</span>`
         : `<span class="di-streak-grace used">🛡️ grâce déjà utilisée — le prochain jour raté remet à 0</span>`;
