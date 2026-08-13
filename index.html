@@ -1,14 +1,14 @@
 <!DOCTYPE html>
-<!-- saved from url=(0052)https://marie-josephkonan.github.io/epitech-planner/ -->
-<html lang="fr" data-theme="light"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Sisu — pas besoin d'avoir envie, juste besoin de continuer</title>
-<link rel="icon" type="image/png" sizes="32x32" href="https://marie-josephkonan.github.io/epitech-planner/sisu-favicon-32.png">
-<link rel="apple-touch-icon" sizes="180x180" href="https://marie-josephkonan.github.io/epitech-planner/sisu-apple-touch-icon.png">
-<link rel="manifest" href="https://marie-josephkonan.github.io/epitech-planner/manifest.json">
+<link rel="icon" type="image/png" sizes="32x32" href="sisu-favicon-32.png">
+<link rel="apple-touch-icon" sizes="180x180" href="sisu-apple-touch-icon.png">
+<link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#8B6FE0">
-<link href="./Sisu — pas besoin d&#39;avoir envie, juste besoin de continuer_files/css2" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@500;600;700&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
   :root{
     --accent:#8B6FE0; --accent-soft:#C6A8E8; --missed:#9B9AA5;
@@ -168,7 +168,8 @@
   .di-status-tag{font-size:10px; padding:2px 8px; border-radius:10px; font-weight:700;}
   .di-status-tag.active{background:var(--pink-light); color:var(--pink-dark);}
   .di-status-tag.queued{background:var(--grey); color:var(--ink);}
-  .di-unlock-box{border:1.5px dashed var(--border); border-radius:14px; padding:14px; text-align:center; margin-top:10px;}
+  .di-unlock-box{border:2px solid var(--accent); background:var(--pink-light); border-radius:14px; padding:16px; text-align:center; margin-top:10px;}
+  .di-unlock-box .btn-primary{margin-top:4px;}
 
   /* ---------- Finances tab ---------- */
   .fi-balance-card{background:linear-gradient(135deg, var(--pink-light), var(--gold-light)); border:1px solid var(--border); border-radius:var(--radius); padding:18px 20px; margin-bottom:14px; text-align:center;}
@@ -200,25 +201,25 @@
   .pl-dash-sub{font-size:11px; color:var(--muted);}
   .pl-focus-input{width:100%; border:1px solid var(--border); border-radius:10px; padding:8px 10px; font-size:12.5px; background:var(--bg); color:var(--ink); resize:vertical; min-height:44px; font-family:'Poppins',sans-serif;}
 </style>
-<style>undefined</style><link rel="preconnect" href="https://fonts.googleapis.com/" crossorigin="use-credentials"><link rel="preconnect" href="https://fonts.gstatic.com/"><link rel="stylesheet" href="./Sisu — pas besoin d&#39;avoir envie, juste besoin de continuer_files/css2(1)"></head>
+</head>
 <body>
 
 <h1 id="appTitle">Sisu</h1>
-<p class="tagline" id="appTagline">devenir plus constante et fiable envers moi même</p>
+<p class="tagline" id="appTagline">Pas besoin d'avoir envie. Juste besoin de continuer.</p>
 
 <div class="theme-toggle">
-  <button id="themeLightBtn" onclick="setTheme(&#39;light&#39;)" class="active">☀️ Clair</button>
-  <button id="themeDarkBtn" onclick="setTheme(&#39;dark&#39;)">🌙 Sombre</button>
+  <button id="themeLightBtn" onclick="setTheme('light')">☀️ Clair</button>
+  <button id="themeDarkBtn" onclick="setTheme('dark')">🌙 Sombre</button>
 </div>
 
 <div class="sync-bar" id="syncBar">
-  <span class="sync-status on" id="syncStatus">Synchronisé ✓</span>
-  <button class="sync-btn hidden" id="syncLoginBtn">Se connecter avec Google</button>
-  <button class="sync-btn" id="syncLogoutBtn">Se déconnecter</button>
+  <span class="sync-status off" id="syncStatus">Non connecté — données en local sur cet appareil</span>
+  <button class="sync-btn" id="syncLoginBtn">Se connecter avec Google</button>
+  <button class="sync-btn hidden" id="syncLogoutBtn">Se déconnecter</button>
 </div>
 
 <!-- ================= ONBOARDING ================= -->
-<div id="onboarding" style="display: none;">
+<div id="onboarding">
 
   <div class="card ob-step active" id="ob-intro">
     <div class="ob-center">
@@ -232,7 +233,7 @@
         <li>📈 Une seule série à faire grandir, visible partout, pour donner envie de revenir.</li>
       </ul>
     </div>
-    <div class="ob-nav"><button class="btn btn-primary" onclick="obGoto(&#39;ob-identity&#39;)">Commencer →</button></div>
+    <div class="ob-nav"><button class="btn btn-primary" onclick="obGoto('ob-identity')">Commencer →</button></div>
   </div>
 
   <div class="card ob-step" id="ob-identity">
@@ -259,8 +260,8 @@
       <input type="text" id="obCurrencyCustom" placeholder="Symbole de ta devise" style="margin-top:6px; display:none;">
     </div>
     <div class="ob-nav">
-      <button class="btn btn-outline" onclick="obGoto(&#39;ob-intro&#39;)">← Retour</button>
-      <button class="btn btn-primary" onclick="obGoto(&#39;ob-habit&#39;)">Continuer →</button>
+      <button class="btn btn-outline" onclick="obGoto('ob-intro')">← Retour</button>
+      <button class="btn btn-primary" onclick="obGoto('ob-habit')">Continuer →</button>
     </div>
   </div>
 
@@ -269,14 +270,14 @@
       <h2>Ta première habitude</h2>
       <p>Choisis-en une seule pour commencer (les autres viendront plus tard, une par une). Tu pourras en ajouter d'autres dans l'onglet Discipline.</p>
     </div>
-    <div class="catalog-grid" id="obHabitCatalog"><div class="catalog-item"><span class="emoji">😴</span>Dormir à heure fixe</div><div class="catalog-item"><span class="emoji">🏃🏽‍♀️</span>Bouger chaque jour</div><div class="catalog-item"><span class="emoji">📖</span>Lire chaque jour</div><div class="catalog-item"><span class="emoji">💻</span>Avancer sur mes projets</div><div class="catalog-item"><span class="emoji">📝</span>Journaling</div><div class="catalog-item"><span class="emoji">📵</span>Limiter les écrans le soir</div></div>
+    <div class="catalog-grid" id="obHabitCatalog"></div>
     <div class="ob-field">
       <label>Ou écris la tienne</label>
       <input type="text" id="obCustomHabit" placeholder="Ex : arrêter de remettre mes projets à demain">
     </div>
     <div class="ob-nav">
-      <button class="btn btn-outline" onclick="obGoto(&#39;ob-identity&#39;)">← Retour</button>
-      <button class="btn btn-primary" onclick="obGoto(&#39;ob-finish&#39;)">Continuer →</button>
+      <button class="btn btn-outline" onclick="obGoto('ob-identity')">← Retour</button>
+      <button class="btn btn-primary" onclick="obGoto('ob-finish')">Continuer →</button>
     </div>
   </div>
 
@@ -286,7 +287,7 @@
       <p id="obFinishMsg">Tout est configuré. Le reste (projets, catégories, objectifs d'épargne) se construit petit à petit directement dans l'appli.</p>
     </div>
     <div class="ob-nav">
-      <button class="btn btn-outline" onclick="obGoto(&#39;ob-habit&#39;)">← Retour</button>
+      <button class="btn btn-outline" onclick="obGoto('ob-habit')">← Retour</button>
       <button class="btn btn-primary" onclick="finishOnboarding()">Ouvrir l'appli →</button>
     </div>
   </div>
@@ -294,190 +295,54 @@
 </div>
 
 <!-- ================= APP SHELL ================= -->
-<div id="appShell" class="active">
+<div id="appShell">
 
   <div class="tab-nav">
-    <button class="tab-btn" data-tab="tab-dashboard" onclick="switchTab(&#39;tab-dashboard&#39;)">🏠 Accueil</button>
-    <button class="tab-btn active" data-tab="tab-planning" onclick="switchTab(&#39;tab-planning&#39;)">🗓️ Planner</button>
-    <button class="tab-btn" data-tab="tab-discipline" onclick="switchTab(&#39;tab-discipline&#39;)">🔥 Discipline</button>
-    <button class="tab-btn" data-tab="tab-finances" onclick="switchTab(&#39;tab-finances&#39;)">💰 Finances</button>
+    <button class="tab-btn active" data-tab="tab-dashboard" onclick="switchTab('tab-dashboard')">🏠 Accueil</button>
+    <button class="tab-btn" data-tab="tab-planning" onclick="switchTab('tab-planning')">🗓️ Planner</button>
+    <button class="tab-btn" data-tab="tab-discipline" onclick="switchTab('tab-discipline')">🔥 Discipline</button>
+    <button class="tab-btn" data-tab="tab-finances" onclick="switchTab('tab-finances')">💰 Finances</button>
   </div>
 
   <!-- ---------- DASHBOARD ---------- -->
-  <div class="tab-panel" id="tab-dashboard">
+  <div class="tab-panel active" id="tab-dashboard">
     <div class="streak-hero">
       <div style="font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--pink-dark);font-weight:700;">Série en cours</div>
-      <div class="num" id="heroStreakNum">1</div>
-      <div class="flames" id="heroFlames">🔥</div>
-      <div style="font-size:12px;color:var(--muted);margin-top:4px;" id="heroSub">premier jour — reviens demain</div>
+      <div class="num" id="heroStreakNum">0</div>
+      <div class="flames" id="heroFlames"></div>
+      <div style="font-size:12px;color:var(--muted);margin-top:4px;" id="heroSub">jour d'activité consécutif</div>
     </div>
-    <div class="tip-box" id="dashTip">💡 La constance ne se sent pas motivante sur le moment. Elle se voit après, dans les résultats.</div>
+    <div class="tip-box" id="dashTip"></div>
     <div class="dash-grid">
       <div class="dash-card">
         <h3>Planner</h3>
-        <div class="big" id="dashPlanningBig">Chocolatine</div>
-        <div class="sub" id="dashPlanningSub">avant le 14/08</div>
-        <div class="link" onclick="switchTab(&#39;tab-planning&#39;)">Voir le planner →</div>
+        <div class="big" id="dashPlanningBig">—</div>
+        <div class="sub" id="dashPlanningSub"></div>
+        <div class="link" onclick="switchTab('tab-planning')">Voir le planner →</div>
       </div>
       <div class="dash-card">
         <h3>Discipline</h3>
-        <div class="big" id="dashDisciplineBig">Avancer sur mes projets</div>
-        <div class="sub" id="dashDisciplineSub">Fait aujourd'hui ✓</div>
-        <div class="link" onclick="switchTab(&#39;tab-discipline&#39;)">Voir mes habitudes →</div>
+        <div class="big" id="dashDisciplineBig">—</div>
+        <div class="sub" id="dashDisciplineSub"></div>
+        <div class="link" onclick="switchTab('tab-discipline')">Voir mes habitudes →</div>
       </div>
       <div class="dash-card">
         <h3>Finances</h3>
-        <div class="big" id="dashFinanceBig">348 900 FCFA</div>
-        <div class="sub" id="dashFinanceSub">solde actuel</div>
-        <div class="link" onclick="switchTab(&#39;tab-finances&#39;)">Voir mes finances →</div>
+        <div class="big" id="dashFinanceBig">—</div>
+        <div class="sub" id="dashFinanceSub"></div>
+        <div class="link" onclick="switchTab('tab-finances')">Voir mes finances →</div>
       </div>
     </div>
   </div>
 
   <!-- ---------- PLANNING ---------- -->
-  <div class="tab-panel active" id="tab-planning">
-    <div class="pl-dash-grid">
-      <div class="card pl-dash-card">
-        <h3>Série en cours</h3>
-        <div class="pl-dash-big" id="plStreakNum">1</div>
-        <div class="pl-dash-sub" id="plStreakSub">premier jour</div>
-        <div id="plStreakFlames" style="font-size:14px;margin-top:4px;">🔥</div>
-      </div>
-      <div class="card pl-dash-card">
-        <h3>Deadline la plus proche</h3>
-        <div id="plUrgentBlock"><div style="font-weight:700;font-family:&#39;Quicksand&#39;,sans-serif;">Chocolatine</div><div style="font-size:20px;font-weight:700;color:var(--red);font-family:&#39;Quicksand&#39;,sans-serif;">1 j 17 h</div><div style="font-size:11px;color:var(--muted);">avant le 14/08 17:42</div></div>
-      </div>
-      <div class="card pl-dash-card">
-        <h3>Focus du jour — une seule chose</h3>
-        <textarea class="pl-focus-input" id="plFocusInput" placeholder="La chose la plus importante à faire aujourd&#39;hui..."></textarea>
-        <div style="display:flex;align-items:center;gap:8px;margin-top:8px;">
-          <input type="checkbox" id="plFocusCheck">
-          <label for="plFocusCheck" style="font-size:12px;color:var(--muted);cursor:pointer;">fait aujourd'hui ✓</label>
-        </div>
-        <button class="btn btn-outline btn-small" id="plNotifBtn" style="margin-top:10px;">🔔 Me rappeler ce planner</button>
-        <div id="plRemindStatus" style="font-size:11px;color:var(--muted);margin-top:6px;">Astuce anti-oubli : épingle cet onglet, ou ajoute la page à ton écran d'accueil.</div>
-      </div>
-    </div>
-
-    <div class="card">
-      <div class="pl-topbar">
-        <div class="pl-nav">
-          <button class="pl-nav-btn" onclick="plChangeWeek(-1)">← Semaine préc.</button>
-          <span class="pl-week-label" id="plWeekLabel">10/08 — 16/08</span>
-          <button class="pl-nav-btn" onclick="plChangeWeek(1)">Semaine suiv. →</button>
-        </div>
-        <button class="pl-nav-btn" onclick="plClearWeek()">Vider cette semaine</button>
-      </div>
-    </div>
-
-    <div class="card pl-panel">
-      <div class="pl-panel-header" id="plPanelHeader"><span>Gérer les projets</span><span id="plPanelToggle">afficher ▾</span></div>
-      <div id="plProjectsList" style="display:none;"></div>
-      <div id="plAddProjectRow" style="display:none; text-align:center; margin-top:8px;">
-        <button class="btn btn-outline btn-small" onclick="plAddProject()">+ Ajouter un projet</button>
-      </div>
-      <div id="plArchiveWrap" style="display:none; margin-top:12px; padding-top:10px; border-top:1px dashed var(--border);">
-        <div class="pl-panel-header" id="plArchiveHeader"><span id="plArchiveTitle">Projets terminés (0)</span><span id="plArchiveToggle">afficher ▾</span></div>
-        <div id="plArchiveList" style="display:none;"></div>
-      </div>
-    </div>
-
-    <div class="card">
-      <div class="section-title">Ajout rapide</div>
-      <p style="font-size:11.5px;color:var(--muted);margin-top:-6px;">Une ligne par créneau : <b>NomProjet ; JJ/MM ; HH:MM-HH:MM</b>. Ajoute un 4ᵉ champ pour répéter chaque semaine : <b>NomProjet ; JJ/MM ; HH:MM-HH:MM ; Nsemaines</b>.</p>
-      <div class="pl-quickadd">
-        <textarea id="plQuickInput" placeholder="Révisions ; 15/08 ; 09:00-12:00"></textarea>
-      </div>
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-top:8px;">
-        <span id="plQuickMsg" style="font-size:11.5px;"></span>
-        <button class="btn btn-primary btn-small" onclick="plQuickAdd()">Ajouter au planning</button>
-      </div>
-    </div>
-
-    <div class="card">
-      <div class="pl-legend" id="plLegend"><div class="pl-legend-chip" draggable="true"><span class="pl-legend-dot" style="background:#53c4ea"></span>Chocolatine</div><div class="pl-legend-chip" draggable="true"><span class="pl-legend-dot" style="background:#ff9b3d"></span>Memo</div><div class="pl-legend-chip" draggable="true"><span class="pl-legend-dot" style="background:#6fb3ef"></span>Robot Factory</div><div class="pl-legend-chip" draggable="true"><span class="pl-legend-dot" style="background:#f2a35e"></span>Hack &amp; Juice</div></div>
-      <div style="overflow-x:auto;"><table class="pl-grid" id="plGridTable"><tbody><tr><th></th><th class="">Lun<br>10/8</th><th class="">Mar<br>11/8</th><th class="">Mer<br>12/8</th><th class="pl-today">Jeu<br>13/8</th><th class="">Ven<br>14/8</th><th class="">Sam<br>15/8</th><th class="">Dim<br>16/8</th></tr><tr><td class="pl-hourlabel">6h</td><td class="pl-hourcell" data-key="2026-08-10_6" onclick="plCellClick(&#39;2026-08-10_6&#39;, this)"></td><td class="pl-hourcell" data-key="2026-08-11_6" onclick="plCellClick(&#39;2026-08-11_6&#39;, this)"></td><td class="pl-hourcell" data-key="2026-08-12_6" onclick="plCellClick(&#39;2026-08-12_6&#39;, this)"></td><td class="pl-hourcell" data-key="2026-08-13_6" onclick="plCellClick(&#39;2026-08-13_6&#39;, this)"></td><td class="pl-hourcell" data-key="2026-08-14_6" onclick="plCellClick(&#39;2026-08-14_6&#39;, this)"></td><td class="pl-hourcell" data-key="2026-08-15_6" onclick="plCellClick(&#39;2026-08-15_6&#39;, this)"></td><td class="pl-hourcell" data-key="2026-08-16_6" onclick="plCellClick(&#39;2026-08-16_6&#39;, this)"></td></tr><tr><td class="pl-hourlabel">7h</td><td class="pl-hourcell" data-key="2026-08-10_7" onclick="plCellClick(&#39;2026-08-10_7&#39;, this)"></td><td class="pl-hourcell" data-key="2026-08-11_7" onclick="plCellClick(&#39;2026-08-11_7&#39;, this)"></td><td class="pl-hourcell" data-key="2026-08-12_7" onclick="plCellClick(&#39;2026-08-12_7&#39;, this)"></td><td class="pl-hourcell" data-key="2026-08-13_7" onclick="plCellClick(&#39;2026-08-13_7&#39;, this)"></td><td class="pl-hourcell" data-key="2026-08-14_7" onclick="plCellClick(&#39;2026-08-14_7&#39;, this)"></td><td class="pl-hourcell" data-key="2026-08-15_7" onclick="plCellClick(&#39;2026-08-15_7&#39;, this)"></td><td class="pl-hourcell" data-key="2026-08-16_7" onclick="plCellClick(&#39;2026-08-16_7&#39;, this)"></td></tr><tr><td class="pl-hourlabel">8h</td><td class="pl-hourcell" data-key="2026-08-10_8" onclick="plCellClick(&#39;2026-08-10_8&#39;, this)"></td><td class="pl-hourcell" data-key="2026-08-11_8" onclick="plCellClick(&#39;2026-08-11_8&#39;, this)"></td><td class="pl-hourcell" data-key="2026-08-12_8" onclick="plCellClick(&#39;2026-08-12_8&#39;, this)"></td><td class="pl-hourcell" data-key="2026-08-13_8" onclick="plCellClick(&#39;2026-08-13_8&#39;, this)"></td><td class="pl-hourcell" data-key="2026-08-14_8" onclick="plCellClick(&#39;2026-08-14_8&#39;, this)"></td><td class="pl-hourcell" data-key="2026-08-15_8" onclick="plCellClick(&#39;2026-08-15_8&#39;, this)"></td><td class="pl-hourcell" data-key="2026-08-16_8" onclick="plCellClick(&#39;2026-08-16_8&#39;, this)"></td></tr><tr><td class="pl-hourlabel">9h</td><td class="pl-hourcell" data-key="2026-08-10_9" onclick="plCellClick(&#39;2026-08-10_9&#39;, this)"></td><td class="pl-hourcell" data-key="2026-08-11_9" onclick="plCellClick(&#39;2026-08-11_9&#39;, this)"></td><td class="pl-hourcell" data-key="2026-08-12_9" onclick="plCellClick(&#39;2026-08-12_9&#39;, this)"></td><td class="pl-hourcell" data-key="2026-08-13_9" onclick="plCellClick(&#39;2026-08-13_9&#39;, this)"></td><td class="pl-hourcell" data-key="2026-08-14_9" onclick="plCellClick(&#39;2026-08-14_9&#39;, this)"></td><td class="pl-hourcell" data-key="2026-08-15_9" onclick="plCellClick(&#39;2026-08-15_9&#39;, this)"></td><td class="pl-hourcell" data-key="2026-08-16_9" onclick="plCellClick(&#39;2026-08-16_9&#39;, this)"></td></tr><tr><td class="pl-hourlabel">10h</td><td class="pl-hourcell" data-key="2026-08-10_10" onclick="plCellClick(&#39;2026-08-10_10&#39;, this)"></td><td class="pl-hourcell" data-key="2026-08-11_10" onclick="plCellClick(&#39;2026-08-11_10&#39;, this)"></td><td class="pl-hourcell" data-key="2026-08-12_10" onclick="plCellClick(&#39;2026-08-12_10&#39;, this)"></td><td class="pl-hourcell" data-key="2026-08-13_10" onclick="plCellClick(&#39;2026-08-13_10&#39;, this)"></td><td class="pl-hourcell" data-key="2026-08-14_10" onclick="plCellClick(&#39;2026-08-14_10&#39;, this)"></td><td class="pl-hourcell" data-key="2026-08-15_10" onclick="plCellClick(&#39;2026-08-15_10&#39;, this)"></td><td class="pl-hourcell" data-key="2026-08-16_10" onclick="plCellClick(&#39;2026-08-16_10&#39;, this)"></td></tr><tr><td class="pl-hourlabel">11h</td><td class="pl-hourcell" data-key="2026-08-10_11" onclick="plCellClick(&#39;2026-08-10_11&#39;, this)"></td><td class="pl-hourcell" data-key="2026-08-11_11" onclick="plCellClick(&#39;2026-08-11_11&#39;, this)"></td><td class="pl-hourcell" data-key="2026-08-12_11" onclick="plCellClick(&#39;2026-08-12_11&#39;, this)"></td><td class="pl-hourcell" data-key="2026-08-13_11" onclick="plCellClick(&#39;2026-08-13_11&#39;, this)"></td><td class="pl-hourcell" data-key="2026-08-14_11" onclick="plCellClick(&#39;2026-08-14_11&#39;, this)"></td><td class="pl-hourcell" data-key="2026-08-15_11" onclick="plCellClick(&#39;2026-08-15_11&#39;, this)"></td><td class="pl-hourcell" data-key="2026-08-16_11" onclick="plCellClick(&#39;2026-08-16_11&#39;, this)"></td></tr><tr><td class="pl-hourlabel">12h</td><td class="pl-hourcell" data-key="2026-08-10_12" onclick="plCellClick(&#39;2026-08-10_12&#39;, this)"></td><td class="pl-hourcell" data-key="2026-08-11_12" onclick="plCellClick(&#39;2026-08-11_12&#39;, this)"></td><td class="pl-hourcell" data-key="2026-08-12_12" onclick="plCellClick(&#39;2026-08-12_12&#39;, this)"></td><td class="pl-hourcell" data-key="2026-08-13_12" onclick="plCellClick(&#39;2026-08-13_12&#39;, this)"></td><td class="pl-hourcell" data-key="2026-08-14_12" onclick="plCellClick(&#39;2026-08-14_12&#39;, this)"></td><td class="pl-hourcell" data-key="2026-08-15_12" onclick="plCellClick(&#39;2026-08-15_12&#39;, this)"></td><td class="pl-hourcell" data-key="2026-08-16_12" onclick="plCellClick(&#39;2026-08-16_12&#39;, this)"></td></tr><tr><td class="pl-hourlabel">13h</td><td class="pl-hourcell" data-key="2026-08-10_13" onclick="plCellClick(&#39;2026-08-10_13&#39;, this)"></td><td class="pl-hourcell" data-key="2026-08-11_13" onclick="plCellClick(&#39;2026-08-11_13&#39;, this)"></td><td class="pl-hourcell" data-key="2026-08-12_13" onclick="plCellClick(&#39;2026-08-12_13&#39;, this)"></td><td class="pl-hourcell" data-key="2026-08-13_13" onclick="plCellClick(&#39;2026-08-13_13&#39;, this)"></td><td class="pl-hourcell" data-key="2026-08-14_13" onclick="plCellClick(&#39;2026-08-14_13&#39;, this)"></td><td class="pl-hourcell" data-key="2026-08-15_13" onclick="plCellClick(&#39;2026-08-15_13&#39;, this)"></td><td class="pl-hourcell" data-key="2026-08-16_13" onclick="plCellClick(&#39;2026-08-16_13&#39;, this)"></td></tr><tr><td class="pl-hourlabel">14h</td><td class="pl-hourcell" data-key="2026-08-10_14" onclick="plCellClick(&#39;2026-08-10_14&#39;, this)"></td><td class="pl-hourcell" data-key="2026-08-11_14" onclick="plCellClick(&#39;2026-08-11_14&#39;, this)"></td><td class="pl-hourcell" data-key="2026-08-12_14" onclick="plCellClick(&#39;2026-08-12_14&#39;, this)"></td><td class="pl-hourcell" data-key="2026-08-13_14" onclick="plCellClick(&#39;2026-08-13_14&#39;, this)"></td><td class="pl-hourcell" data-key="2026-08-14_14" onclick="plCellClick(&#39;2026-08-14_14&#39;, this)"></td><td class="pl-hourcell" data-key="2026-08-15_14" onclick="plCellClick(&#39;2026-08-15_14&#39;, this)"></td><td class="pl-hourcell" data-key="2026-08-16_14" onclick="plCellClick(&#39;2026-08-16_14&#39;, this)"></td></tr><tr><td class="pl-hourlabel">15h</td><td class="pl-hourcell" data-key="2026-08-10_15" onclick="plCellClick(&#39;2026-08-10_15&#39;, this)"></td><td class="pl-hourcell" data-key="2026-08-11_15" onclick="plCellClick(&#39;2026-08-11_15&#39;, this)"></td><td class="pl-hourcell assigned" style="background:#53c4ea" data-key="2026-08-12_15" onclick="plCellClick(&#39;2026-08-12_15&#39;, this)">Chocolatine<span class="pl-cell-del" onclick="event.stopPropagation(); plClearCell(&#39;2026-08-12_15&#39;)">✕</span></td><td class="pl-hourcell" data-key="2026-08-13_15" onclick="plCellClick(&#39;2026-08-13_15&#39;, this)"></td><td class="pl-hourcell" data-key="2026-08-14_15" onclick="plCellClick(&#39;2026-08-14_15&#39;, this)"></td><td class="pl-hourcell" data-key="2026-08-15_15" onclick="plCellClick(&#39;2026-08-15_15&#39;, this)"></td><td class="pl-hourcell" data-key="2026-08-16_15" onclick="plCellClick(&#39;2026-08-16_15&#39;, this)"></td></tr><tr><td class="pl-hourlabel">16h</td><td class="pl-hourcell" data-key="2026-08-10_16" onclick="plCellClick(&#39;2026-08-10_16&#39;, this)"></td><td class="pl-hourcell" data-key="2026-08-11_16" onclick="plCellClick(&#39;2026-08-11_16&#39;, this)"></td><td class="pl-hourcell assigned" style="background:#53c4ea" data-key="2026-08-12_16" onclick="plCellClick(&#39;2026-08-12_16&#39;, this)">Chocolatine<span class="pl-cell-del" onclick="event.stopPropagation(); plClearCell(&#39;2026-08-12_16&#39;)">✕</span></td><td class="pl-hourcell" data-key="2026-08-13_16" onclick="plCellClick(&#39;2026-08-13_16&#39;, this)"></td><td class="pl-hourcell" data-key="2026-08-14_16" onclick="plCellClick(&#39;2026-08-14_16&#39;, this)"></td><td class="pl-hourcell" data-key="2026-08-15_16" onclick="plCellClick(&#39;2026-08-15_16&#39;, this)"></td><td class="pl-hourcell" data-key="2026-08-16_16" onclick="plCellClick(&#39;2026-08-16_16&#39;, this)"></td></tr><tr><td class="pl-hourlabel">17h</td><td class="pl-hourcell" data-key="2026-08-10_17" onclick="plCellClick(&#39;2026-08-10_17&#39;, this)"></td><td class="pl-hourcell" data-key="2026-08-11_17" onclick="plCellClick(&#39;2026-08-11_17&#39;, this)"></td><td class="pl-hourcell assigned" style="background:#53c4ea" data-key="2026-08-12_17" onclick="plCellClick(&#39;2026-08-12_17&#39;, this)">Chocolatine<span class="pl-cell-del" onclick="event.stopPropagation(); plClearCell(&#39;2026-08-12_17&#39;)">✕</span></td><td class="pl-hourcell" data-key="2026-08-13_17" onclick="plCellClick(&#39;2026-08-13_17&#39;, this)"></td><td class="pl-hourcell" data-key="2026-08-14_17" onclick="plCellClick(&#39;2026-08-14_17&#39;, this)"></td><td class="pl-hourcell" data-key="2026-08-15_17" onclick="plCellClick(&#39;2026-08-15_17&#39;, this)"></td><td class="pl-hourcell" data-key="2026-08-16_17" onclick="plCellClick(&#39;2026-08-16_17&#39;, this)"></td></tr><tr><td class="pl-hourlabel">18h</td><td class="pl-hourcell" data-key="2026-08-10_18" onclick="plCellClick(&#39;2026-08-10_18&#39;, this)"></td><td class="pl-hourcell" data-key="2026-08-11_18" onclick="plCellClick(&#39;2026-08-11_18&#39;, this)"></td><td class="pl-hourcell" data-key="2026-08-12_18" onclick="plCellClick(&#39;2026-08-12_18&#39;, this)"></td><td class="pl-hourcell" data-key="2026-08-13_18" onclick="plCellClick(&#39;2026-08-13_18&#39;, this)"></td><td class="pl-hourcell" data-key="2026-08-14_18" onclick="plCellClick(&#39;2026-08-14_18&#39;, this)"></td><td class="pl-hourcell" data-key="2026-08-15_18" onclick="plCellClick(&#39;2026-08-15_18&#39;, this)"></td><td class="pl-hourcell" data-key="2026-08-16_18" onclick="plCellClick(&#39;2026-08-16_18&#39;, this)"></td></tr><tr><td class="pl-hourlabel">19h</td><td class="pl-hourcell" data-key="2026-08-10_19" onclick="plCellClick(&#39;2026-08-10_19&#39;, this)"></td><td class="pl-hourcell" data-key="2026-08-11_19" onclick="plCellClick(&#39;2026-08-11_19&#39;, this)"></td><td class="pl-hourcell" data-key="2026-08-12_19" onclick="plCellClick(&#39;2026-08-12_19&#39;, this)"></td><td class="pl-hourcell" data-key="2026-08-13_19" onclick="plCellClick(&#39;2026-08-13_19&#39;, this)"></td><td class="pl-hourcell" data-key="2026-08-14_19" onclick="plCellClick(&#39;2026-08-14_19&#39;, this)"></td><td class="pl-hourcell" data-key="2026-08-15_19" onclick="plCellClick(&#39;2026-08-15_19&#39;, this)"></td><td class="pl-hourcell" data-key="2026-08-16_19" onclick="plCellClick(&#39;2026-08-16_19&#39;, this)"></td></tr><tr><td class="pl-hourlabel">20h</td><td class="pl-hourcell" data-key="2026-08-10_20" onclick="plCellClick(&#39;2026-08-10_20&#39;, this)"></td><td class="pl-hourcell" data-key="2026-08-11_20" onclick="plCellClick(&#39;2026-08-11_20&#39;, this)"></td><td class="pl-hourcell" data-key="2026-08-12_20" onclick="plCellClick(&#39;2026-08-12_20&#39;, this)"></td><td class="pl-hourcell" data-key="2026-08-13_20" onclick="plCellClick(&#39;2026-08-13_20&#39;, this)"></td><td class="pl-hourcell" data-key="2026-08-14_20" onclick="plCellClick(&#39;2026-08-14_20&#39;, this)"></td><td class="pl-hourcell" data-key="2026-08-15_20" onclick="plCellClick(&#39;2026-08-15_20&#39;, this)"></td><td class="pl-hourcell" data-key="2026-08-16_20" onclick="plCellClick(&#39;2026-08-16_20&#39;, this)"></td></tr><tr><td class="pl-hourlabel">21h</td><td class="pl-hourcell" data-key="2026-08-10_21" onclick="plCellClick(&#39;2026-08-10_21&#39;, this)"></td><td class="pl-hourcell" data-key="2026-08-11_21" onclick="plCellClick(&#39;2026-08-11_21&#39;, this)"></td><td class="pl-hourcell" data-key="2026-08-12_21" onclick="plCellClick(&#39;2026-08-12_21&#39;, this)"></td><td class="pl-hourcell" data-key="2026-08-13_21" onclick="plCellClick(&#39;2026-08-13_21&#39;, this)"></td><td class="pl-hourcell" data-key="2026-08-14_21" onclick="plCellClick(&#39;2026-08-14_21&#39;, this)"></td><td class="pl-hourcell" data-key="2026-08-15_21" onclick="plCellClick(&#39;2026-08-15_21&#39;, this)"></td><td class="pl-hourcell" data-key="2026-08-16_21" onclick="plCellClick(&#39;2026-08-16_21&#39;, this)"></td></tr><tr><td class="pl-hourlabel">22h</td><td class="pl-hourcell" data-key="2026-08-10_22" onclick="plCellClick(&#39;2026-08-10_22&#39;, this)"></td><td class="pl-hourcell" data-key="2026-08-11_22" onclick="plCellClick(&#39;2026-08-11_22&#39;, this)"></td><td class="pl-hourcell" data-key="2026-08-12_22" onclick="plCellClick(&#39;2026-08-12_22&#39;, this)"></td><td class="pl-hourcell" data-key="2026-08-13_22" onclick="plCellClick(&#39;2026-08-13_22&#39;, this)"></td><td class="pl-hourcell" data-key="2026-08-14_22" onclick="plCellClick(&#39;2026-08-14_22&#39;, this)"></td><td class="pl-hourcell" data-key="2026-08-15_22" onclick="plCellClick(&#39;2026-08-15_22&#39;, this)"></td><td class="pl-hourcell" data-key="2026-08-16_22" onclick="plCellClick(&#39;2026-08-16_22&#39;, this)"></td></tr><tr><td class="pl-hourlabel">23h</td><td class="pl-hourcell" data-key="2026-08-10_23" onclick="plCellClick(&#39;2026-08-10_23&#39;, this)"></td><td class="pl-hourcell" data-key="2026-08-11_23" onclick="plCellClick(&#39;2026-08-11_23&#39;, this)"></td><td class="pl-hourcell" data-key="2026-08-12_23" onclick="plCellClick(&#39;2026-08-12_23&#39;, this)"></td><td class="pl-hourcell" data-key="2026-08-13_23" onclick="plCellClick(&#39;2026-08-13_23&#39;, this)"></td><td class="pl-hourcell" data-key="2026-08-14_23" onclick="plCellClick(&#39;2026-08-14_23&#39;, this)"></td><td class="pl-hourcell" data-key="2026-08-15_23" onclick="plCellClick(&#39;2026-08-15_23&#39;, this)"></td><td class="pl-hourcell" data-key="2026-08-16_23" onclick="plCellClick(&#39;2026-08-16_23&#39;, this)"></td></tr></tbody></table></div>
-    </div>
-
-    <div class="card">
-      <div class="section-title">Deadlines à venir</div>
-      <div id="plDeadlineList"><div class="pl-deadline-item"><span>Chocolatine</span><span style="font-weight:700;color:var(--red)">1 j</span></div><div class="pl-deadline-item"><span>Memo</span><span style="font-weight:700;color:var(--red)">1 j</span></div><div class="pl-deadline-item"><span>Robot Factory</span><span style="font-weight:700;color:var(--pink-dark)">8 j</span></div><div class="pl-deadline-item"><span>Hack &amp; Juice</span><span style="font-weight:700;color:var(--pink-dark)">8 j</span></div></div>
-    </div>
-  </div>
+  <div class="tab-panel" id="tab-planning"></div>
 
   <!-- ---------- DISCIPLINE ---------- -->
-  <div class="tab-panel" id="tab-discipline">
-    <div class="di-active-card" id="diActiveCard">
-      <div style="font-size:11px;text-transform:uppercase;color:var(--pink-dark);font-weight:700;">Habitude active</div>
-      <h2>Avancer sur mes projets</h2>
-      <div style="font-size:13px;margin-bottom:6px;">30 à 45 minutes de travail concentré</div>
-      <div style="font-size:12px;color:var(--muted);font-style:italic;margin-bottom:12px;">Jour difficile ? Minimum : Ouvrir le dossier et faire une seule chose</div>
-      <div class="di-checkin-row">
-        <div class="di-checkin-btn full chosen" onclick="diCheckIn(&#39;hmsow807497&#39;,&#39;full&#39;)">✓ Fait en entier</div>
-        <div class="di-checkin-btn minimum " onclick="diCheckIn(&#39;hmsow807497&#39;,&#39;minimum&#39;)">⚬ Minimum</div>
-        <div class="di-checkin-btn missed " onclick="diCheckIn(&#39;hmsow807497&#39;,&#39;missed&#39;)">✕ Raté</div>
-      </div>
-    </div>
-    <div class="di-stats-row" id="diStatsRow">
-      <div class="di-stat-box"><div class="num">1</div><div class="lbl">jours de constance</div></div>
-      <div class="di-stat-box"><div class="num">1</div><div class="lbl">jours en version pleine</div></div>
-      <div class="di-stat-box"><div class="num">1</div><div class="lbl">jours actifs au total</div></div>
-    </div>
-    <div class="card">
-      <div class="section-title">Les 4 dernières semaines</div>
-      <div class="di-heatmap" id="diHeatmap"><div class="di-heatmap-cell"></div><div class="di-heatmap-cell"></div><div class="di-heatmap-cell"></div><div class="di-heatmap-cell"></div><div class="di-heatmap-cell"></div><div class="di-heatmap-cell"></div><div class="di-heatmap-cell"></div><div class="di-heatmap-cell"></div><div class="di-heatmap-cell"></div><div class="di-heatmap-cell"></div><div class="di-heatmap-cell"></div><div class="di-heatmap-cell"></div><div class="di-heatmap-cell"></div><div class="di-heatmap-cell"></div><div class="di-heatmap-cell"></div><div class="di-heatmap-cell"></div><div class="di-heatmap-cell"></div><div class="di-heatmap-cell"></div><div class="di-heatmap-cell"></div><div class="di-heatmap-cell"></div><div class="di-heatmap-cell"></div><div class="di-heatmap-cell"></div><div class="di-heatmap-cell"></div><div class="di-heatmap-cell"></div><div class="di-heatmap-cell"></div><div class="di-heatmap-cell missed"></div><div class="di-heatmap-cell"></div><div class="di-heatmap-cell full"></div></div>
-    </div>
-    <div class="card di-unlock-box" id="diUnlockBox"><div style="font-size:13px;color:var(--muted);">Toutes tes habitudes sont actives.</div></div>
-    <div class="card">
-      <div class="section-title">Toutes tes habitudes</div>
-      <div id="diHabitsOverview"><div class="di-habit-row"><span>Avancer sur mes projets</span><span class="di-status-tag active">active</span></div><div class="di-habit-row"><span>Prevoir ma journée</span><span class="di-status-tag active">active</span></div></div>
-      <div style="text-align:center;margin-top:10px;">
-        <button class="btn btn-outline btn-small" onclick="diOpenCatalogPicker()">+ Ajouter une habitude à la file</button>
-      </div>
-    </div>
-    <div class="card">
-      <div class="section-title">Réflexion de la semaine</div>
-      <textarea class="ob-field" id="diReflectInput" style="width:100%;min-height:70px;border:1px solid var(--border);border-radius:10px;padding:9px 11px;font-size:13px;" placeholder="Qu&#39;est-ce qui a tenu ? Qu&#39;est-ce qui a coincé ?"></textarea>
-      <div style="text-align:right;margin-top:8px;"><button class="btn btn-gold btn-small" onclick="diSaveReflection()">Enregistrer</button></div>
-      <div id="diReflectHistory" style="margin-top:10px;font-size:12px;color:var(--muted);"></div>
-    </div>
-  </div>
+  <div class="tab-panel" id="tab-discipline"></div>
 
   <!-- ---------- FINANCES ---------- -->
-  <div class="tab-panel" id="tab-finances">
-    <div class="fi-balance-card">
-      <div style="font-size:11px;text-transform:uppercase;color:var(--pink-dark);font-weight:700;">Solde actuel</div>
-      <div class="amount" id="fiBalance">348 900 FCFA</div>
-      <div style="display:flex;justify-content:center;gap:18px;font-size:12.5px;">
-        <span>Entrées ce mois : <b id="fiMonthIn" style="color:#2e7d4f;">550 000 FCFA</b></span>
-        <span>Sorties ce mois : <b id="fiMonthOut" style="color:#a34a4a;">152 100 FCFA</b></span>
-      </div>
-    </div>
-    <div class="tip-box" id="fiTip">💡 Noter une dépense n'est pas un jugement — juste de l'information pour voir clair.</div>
-    <div class="card">
-      <div class="section-title">Ajouter un mouvement</div>
-      <div class="fi-type-toggle">
-        <div class="fi-type-btn in active" id="fiTypeIn" onclick="fiSetType(&#39;in&#39;)">↓ Entrée</div>
-        <div class="fi-type-btn out" id="fiTypeOut" onclick="fiSetType(&#39;out&#39;)">↑ Sortie</div>
-      </div>
-      <div class="fi-row2">
-        <input type="number" id="fiAmount" placeholder="Montant">
-        <select id="fiCategory"><option value="fc_food">Alimentation</option><option value="fc_transport">Transport</option><option value="fc_home">Logement</option><option value="fc_leisure">Loisirs</option><option value="fc_health">Santé</option><option value="fc_saving">Épargne</option><option value="fc_other">Autre</option></select>
-      </div>
-      <div class="fi-row2">
-        <input type="text" id="fiNote" placeholder="Note (optionnel)">
-        <input type="date" id="fiDate">
-      </div>
-      <div style="text-align:right;margin-top:10px;"><button class="btn btn-primary" onclick="fiAddTx()">Ajouter</button></div>
-    </div>
-    <div class="card">
-      <div class="section-title">Historique récent</div>
-      <div id="fiTxList"><div class="fi-tx-row"><span>Medicament cafard <span style="color:var(--muted);font-size:11px;">— Autre</span></span><span style="font-weight:700;color:#a34a4a;">-100 FCFA <span style="cursor:pointer;color:var(--muted);" onclick="fiDeleteTx(&#39;tmsq84ga987&#39;)">✕</span></span></div><div class="fi-tx-row"><span>Spinser(soutien) <span style="color:var(--muted);font-size:11px;">— Autre</span></span><span style="font-weight:700;color:#a34a4a;">-1 000 FCFA <span style="cursor:pointer;color:var(--muted);" onclick="fiDeleteTx(&#39;tmsq83epy66&#39;)">✕</span></span></div><div class="fi-tx-row"><span>Tapette <span style="color:var(--muted);font-size:11px;">— Autre</span></span><span style="font-weight:700;color:#a34a4a;">-1 000 FCFA <span style="cursor:pointer;color:var(--muted);" onclick="fiDeleteTx(&#39;tmsq8323q678&#39;)">✕</span></span></div><div class="fi-tx-row"><span>Ballaie à manche <span style="color:var(--muted);font-size:11px;">— Logement</span></span><span style="font-weight:700;color:#a34a4a;">-1 500 FCFA <span style="cursor:pointer;color:var(--muted);" onclick="fiDeleteTx(&#39;tmsq82ql9671&#39;)">✕</span></span></div><div class="fi-tx-row"><span>Appareils de massage <span style="color:var(--muted);font-size:11px;">— Loisirs</span></span><span style="font-weight:700;color:#a34a4a;">-1 900 FCFA <span style="cursor:pointer;color:var(--muted);" onclick="fiDeleteTx(&#39;tmsq822ed303&#39;)">✕</span></span></div><div class="fi-tx-row"><span>Transport <span style="color:var(--muted);font-size:11px;">— Transport</span></span><span style="font-weight:700;color:#a34a4a;">-300 FCFA <span style="cursor:pointer;color:var(--muted);" onclick="fiDeleteTx(&#39;tmspbnxed645&#39;)">✕</span></span></div><div class="fi-tx-row"><span>Spotify <span style="color:var(--muted);font-size:11px;">— Loisirs</span></span><span style="font-weight:700;color:#a34a4a;">-2 500 FCFA <span style="cursor:pointer;color:var(--muted);" onclick="fiDeleteTx(&#39;tmsoz8bc8269&#39;)">✕</span></span></div><div class="fi-tx-row"><span>Claude <span style="color:var(--muted);font-size:11px;">— Alimentation</span></span><span style="font-weight:700;color:#a34a4a;">-13 000 FCFA <span style="cursor:pointer;color:var(--muted);" onclick="fiDeleteTx(&#39;tmsoz7l9j657&#39;)">✕</span></span></div><div class="fi-tx-row"><span>Alimentation <span style="color:var(--muted);font-size:11px;">— Alimentation</span></span><span style="font-weight:700;color:#a34a4a;">-2 800 FCFA <span style="cursor:pointer;color:var(--muted);" onclick="fiDeleteTx(&#39;tmsoz6ksz704&#39;)">✕</span></span></div><div class="fi-tx-row"><span>Don parrain <span style="color:var(--muted);font-size:11px;">— Autre</span></span><span style="font-weight:700;color:#2e7d4f;">+400 000 FCFA <span style="cursor:pointer;color:var(--muted);" onclick="fiDeleteTx(&#39;tmsoyujss188&#39;)">✕</span></span></div><div class="fi-tx-row"><span>Epargne de base <span style="color:var(--muted);font-size:11px;">— Épargne</span></span><span style="font-weight:700;color:#2e7d4f;">+130 000 FCFA <span style="cursor:pointer;color:var(--muted);" onclick="fiDeleteTx(&#39;tmsoyu6b3226&#39;)">✕</span></span></div><div class="fi-tx-row"><span>Argent de poche semaine <span style="color:var(--muted);font-size:11px;">— Autre</span></span><span style="font-weight:700;color:#2e7d4f;">+20 000 FCFA <span style="cursor:pointer;color:var(--muted);" onclick="fiDeleteTx(&#39;tmsozasak303&#39;)">✕</span></span></div></div>
-    </div>
-    <div class="card" id="fiStage2"><div class="fi-locked">🔒 <b>Étape 2 — Se structurer</b><br><span style="font-size:12.5px;color:var(--muted);">Enveloppes par catégorie avec limites. Recommandé après une dizaine de mouvements (tu en es à 20).</span><br><br><button class="btn btn-primary btn-small" onclick="fiSetStage(2); fiRender();">Débloquer l'étape 2</button></div></div>
-    <div class="card" id="fiStage3"><div class="fi-locked">🔒 <b>Étape 3 — Épargner sans y penser</b><br><span style="font-size:12.5px;color:var(--muted);">Objectifs visuels + règle "je me paie en premier".</span><br><br><button class="btn btn-primary btn-small" onclick="fiSetStage(3); fiRender();">Débloquer l'étape 3</button></div></div>
-    <div class="card" id="fiStage4"><div class="fi-locked">🔒 <b>Étape 4 — Faire fructifier</b><br><span style="font-size:12.5px;color:var(--muted);">Recommandé une fois un premier objectif alimenté.</span><br><br><button class="btn btn-primary btn-small" onclick="fiSetStage(4); fiRender();">Débloquer l'étape 4</button></div></div>
-  </div>
+  <div class="tab-panel" id="tab-finances"></div>
 
 </div>
 
@@ -1191,6 +1056,9 @@ function diRender(){
       const entry = log[key] && log[key][active.id];
       const cell = document.createElement('div');
       cell.className = 'di-heatmap-cell' + (entry ? ' '+entry : '');
+      cell.title = new Date(key).toLocaleDateString('fr-FR',{day:'2-digit',month:'2-digit'}) + (i===0 ? " (aujourd'hui)" : '') + " — clique pour corriger";
+      cell.style.cursor = 'pointer';
+      cell.onclick = () => diCyclePastDay(active.id, key);
       heat.appendChild(cell);
     }
   }
@@ -1218,6 +1086,20 @@ function diCheckIn(id, value){
   const today = todayKey();
   if(!log[today]) log[today] = {};
   if(log[today][id] === value) delete log[today][id]; else log[today][id] = value;
+  diSaveLog(log);
+  diRender();
+  renderDashboardSummary();
+}
+
+/* Corrige un jour passé (ou aujourd'hui) directement depuis le galet de la heatmap :
+   fait défiler les états dans l'ordre vide → plein → minimum → raté → vide */
+function diCyclePastDay(habitId, dateStr){
+  const log = diLoadLog();
+  if(!log[dateStr]) log[dateStr] = {};
+  const current = log[dateStr][habitId];
+  const order = [undefined, 'full', 'minimum', 'missed'];
+  const next = order[(order.indexOf(current) + 1) % order.length];
+  if(next === undefined) delete log[dateStr][habitId]; else log[dateStr][habitId] = next;
   diSaveLog(log);
   diRender();
   renderDashboardSummary();
@@ -1606,6 +1488,7 @@ window.__applyRemoteState = function(state){
     initPlanning();
     initDiscipline();
     initFinances();
+    touchStreak(); // ré-applique la série du jour APRÈS la fusion cloud, pour ne jamais se faire écraser par une version distante plus ancienne
     renderDashboardSummary();
   }
 };
@@ -1698,6 +1581,5 @@ boot();
 
 
 
-
-
-<deepl-input-controller translate="no"><template shadowrootmode="open"><link rel="stylesheet" href="chrome-extension://cofdbpoegempjloogbagkncekinflcnj/build/content.css"><div dir="ltr" data-dl-surface="inputTranslator" data-dl-impl="svelte" style="visibility: initial !important;"><div class="dl-input-translation-container svelte-95aucy"><div></div></div></div></template></deepl-input-controller></body></html>
+</body>
+</html>
