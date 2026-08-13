@@ -94,6 +94,42 @@
   /* ---------- Dashboard tab ---------- */
   .dash-grid{display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px; margin-bottom:16px;}
   @media(max-width:760px){.dash-grid{grid-template-columns:1fr;}}
+
+  /* Carte priorité du jour : LA chose la plus importante, mise en avant seule */
+  .priority-card{
+    background:var(--card); border:2px solid var(--accent); border-radius:var(--radius); padding:18px 20px;
+    margin-bottom:14px; display:flex; align-items:center; gap:14px; cursor:pointer; transition:transform .12s;
+  }
+  .priority-card:hover{transform:translateY(-1px);}
+  .priority-card .icon{font-size:28px; flex-shrink:0;}
+  .priority-card .content{flex:1;}
+  .priority-card .label{font-size:10.5px; text-transform:uppercase; letter-spacing:.05em; color:var(--accent); font-weight:700; margin-bottom:2px;}
+  .priority-card .msg{font-family:'Quicksand',sans-serif; font-weight:700; font-size:15px;}
+  .priority-card .arrow{font-size:18px; color:var(--accent); flex-shrink:0;}
+
+  /* Feedback tactile : pulse au clic */
+  @keyframes sisu-pulse{
+    0%{ transform:scale(1); }
+    35%{ transform:scale(1.08); }
+    100%{ transform:scale(1); }
+  }
+  .sisu-pulse{ animation:sisu-pulse .28s ease; }
+
+  /* Célébration de palier de série */
+  .milestone-overlay{
+    position:fixed; inset:0; background:rgba(20,10,40,0.55); display:flex; align-items:center; justify-content:center;
+    z-index:200; animation:sisu-fadein .2s ease;
+  }
+  @keyframes sisu-fadein{ from{opacity:0;} to{opacity:1;} }
+  .milestone-box{
+    background:var(--card); border-radius:24px; padding:36px 32px; text-align:center; max-width:320px;
+    box-shadow:0 20px 60px rgba(0,0,0,0.3); animation:sisu-pop .35s cubic-bezier(.34,1.56,.64,1);
+  }
+  @keyframes sisu-pop{ from{transform:scale(.7); opacity:0;} to{transform:scale(1); opacity:1;} }
+  .milestone-box .num{font-family:'Quicksand',sans-serif; font-size:52px; font-weight:700; color:var(--accent);}
+  .milestone-box .flames-big{font-size:26px; margin:6px 0;}
+  .milestone-box .title{font-family:'Quicksand',sans-serif; font-weight:700; font-size:17px; margin:6px 0 8px;}
+  .milestone-box .sub{font-size:13px; color:var(--muted); margin-bottom:18px; line-height:1.5;}
   .dash-card{background:var(--card); border:1px solid var(--border); border-radius:var(--radius); padding:16px 18px;}
   .dash-card h3{font-family:'Quicksand',sans-serif; font-size:12px; text-transform:uppercase; letter-spacing:.05em; color:var(--muted); margin:0 0 8px;}
   .dash-card .big{font-family:'Quicksand',sans-serif; font-size:24px; font-weight:700; color:var(--pink-dark);}
@@ -347,6 +383,7 @@
       <div class="flames" id="heroFlames"></div>
       <div style="font-size:12px;color:var(--muted);margin-top:4px;" id="heroSub">jour d'activité consécutif</div>
     </div>
+    <div class="priority-card" id="priorityCard"></div>
     <div class="tip-box" id="dashTip"></div>
     <div class="dash-grid">
       <div class="dash-card">
@@ -525,6 +562,7 @@ function finishOnboarding(){
   initFinances();
   touchStreak();
   renderDashboardSummary();
+  checkStreakMilestone();
 }
 
 /* ---------------- Résumé dashboard ---------------- */
@@ -552,6 +590,106 @@ function renderDashboardSummary(){
   const balance = txs.reduce((s,t) => s + (t.type==='in'?t.amount:-t.amount), 0);
   document.getElementById('dashFinanceBig').textContent = fmtMoney(balance);
   document.getElementById('dashFinanceSub').textContent = "solde actuel";
+
+  renderPriorityCard(activeHabits, log, today, upcoming);
+}
+
+/* ---------------- Carte "priorité du jour" : une seule chose mise en avant ---------------- */
+function renderPriorityCard(activeHabits, log, today, upcomingProject){
+  const card = document.getElementById('priorityCard');
+  const missingHabit = activeHabits.find(h => !(log[today] && log[today][h.id]));
+
+  if(missingHabit){
+    card.innerHTML = `
+      <div class="icon">🔥</div>
+      <div class="content">
+        <div class="label">À faire aujourd'hui</div>
+        <div class="msg">Coche « ${missingHabit.name} »</div>
+      </div>
+      <div class="arrow">→</div>`;
+    card.onclick = () => switchTab('tab-discipline');
+    return;
+  }
+
+  if(upcomingProject){
+    const diffH = Math.floor((upcomingProject.end - new Date())/3600000);
+    if(diffH <= 48){
+      card.innerHTML = `
+        <div class="icon">⏰</div>
+        <div class="content">
+          <div class="label">Deadline proche</div>
+          <div class="msg">${upcomingProject.name} — ${diffH} h restantes</div>
+        </div>
+        <div class="arrow">→</div>`;
+      card.onclick = () => switchTab('tab-planning');
+      return;
+    }
+  }
+
+  const cats = loadJSON(FI_CAT_KEY, null) || [];
+  const txs = loadJSON(FI_TX_KEY, []);
+  const now = new Date();
+  const curMonth = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
+  const overBudget = cats.find(c => {
+    if(!c.limit) return false;
+    const spent = txs.filter(t=>t.category===c.id && t.type==='out' && t.date && t.date.startsWith(curMonth)).reduce((s,t)=>s+t.amount,0);
+    return spent > c.limit;
+  });
+  if(overBudget){
+    card.innerHTML = `
+      <div class="icon">💸</div>
+      <div class="content">
+        <div class="label">À surveiller</div>
+        <div class="msg">Enveloppe « ${overBudget.name} » dépassée ce mois-ci</div>
+      </div>
+      <div class="arrow">→</div>`;
+    card.onclick = () => switchTab('tab-finances');
+    return;
+  }
+
+  card.innerHTML = `
+    <div class="icon">🎉</div>
+    <div class="content">
+      <div class="label">Bien joué</div>
+      <div class="msg">Tu es à jour partout aujourd'hui</div>
+    </div>`;
+  card.onclick = null;
+}
+
+/* ---------------- Feedback tactile ---------------- */
+function sisuPulse(el){
+  if(!el) return;
+  el.classList.remove('sisu-pulse');
+  void el.offsetWidth; // force reflow pour pouvoir rejouer l'animation
+  el.classList.add('sisu-pulse');
+}
+
+/* ---------------- Célébration de palier de série ---------------- */
+const STREAK_MILESTONES = [7, 14, 30, 50, 100, 200, 365];
+function checkStreakMilestone(){
+  const data = loadJSON(STREAK_KEY, {count:0});
+  const count = data.count || 0;
+  if(!STREAK_MILESTONES.includes(count)) return;
+  const celebratedKey = "sisu_celebrated_milestones_v1";
+  const celebrated = loadJSON(celebratedKey, []);
+  if(celebrated.includes(count)) return;
+  celebrated.push(count);
+  try { localStorage.setItem(celebratedKey, JSON.stringify(celebrated)); } catch(e){}
+
+  const overlay = document.createElement('div');
+  overlay.className = 'milestone-overlay';
+  overlay.innerHTML = `
+    <div class="milestone-box">
+      <div class="num">${count}</div>
+      <div class="flames-big">🔥</div>
+      <div class="title">${count} jours d'affilée</div>
+      <div class="sub">Pas de motivation nécessaire. Juste toi qui continues. C'est exactement ça, Sisu.</div>
+      <button class="btn btn-primary btn-small" id="milestoneCloseBtn">Continuer</button>
+    </div>`;
+  document.body.appendChild(overlay);
+  const close = () => overlay.remove();
+  overlay.onclick = (e) => { if(e.target === overlay) close(); };
+  document.getElementById('milestoneCloseBtn').onclick = close;
 }
 
 /* ---------------- Démarrage ---------------- */
@@ -571,6 +709,7 @@ function boot(){
     initFinances();
     touchStreak();
     renderDashboardSummary();
+    checkStreakMilestone();
   }
 }
 </script>
@@ -1085,9 +1224,9 @@ function diRender(){
                 <span class="desc">min. : ${h.min}</span>
               </div>
               <div class="di-checkin-mini-row">
-                <div class="di-checkin-mini-btn full ${todayEntry==='full'?'chosen':''}" onclick="diCheckIn('${h.id}','full')">✓ Entier</div>
-                <div class="di-checkin-mini-btn minimum ${todayEntry==='minimum'?'chosen':''}" onclick="diCheckIn('${h.id}','minimum')">⚬ Minimum</div>
-                <div class="di-checkin-mini-btn missed ${todayEntry==='missed'?'chosen':''}" onclick="diCheckIn('${h.id}','missed')">✕ Raté</div>
+                <div class="di-checkin-mini-btn full ${todayEntry==='full'?'chosen':''}" onclick="sisuPulse(this); diCheckIn('${h.id}','full')">✓ Entier</div>
+                <div class="di-checkin-mini-btn minimum ${todayEntry==='minimum'?'chosen':''}" onclick="sisuPulse(this); diCheckIn('${h.id}','minimum')">⚬ Minimum</div>
+                <div class="di-checkin-mini-btn missed ${todayEntry==='missed'?'chosen':''}" onclick="sisuPulse(this); diCheckIn('${h.id}','missed')">✕ Raté</div>
               </div>
             </div>
           `;
@@ -1607,6 +1746,7 @@ window.__applyRemoteState = function(state){
     initFinances();
     touchStreak(); // ré-applique la série du jour APRÈS la fusion cloud, pour ne jamais se faire écraser par une version distante plus ancienne
     renderDashboardSummary();
+    checkStreakMilestone();
   }
 };
 
