@@ -367,6 +367,21 @@
     </div>
     <div class="ob-nav">
       <button class="btn btn-outline" onclick="obGoto('ob-identity')">← Retour</button>
+      <button class="btn btn-primary" onclick="obGoto('ob-why')">Continuer →</button>
+    </div>
+  </div>
+
+  <div class="card ob-step" id="ob-why">
+    <div class="ob-center">
+      <h2>Un message pour toi-même</h2>
+      <p>Écris quelques mots pour la future toi — celle qui aura envie d'abandonner. Ce n'est pas moi qui parlerai à ce moment-là, ce sera ta propre voix. Elle n'apparaîtra que quand ce sera vraiment nécessaire, pas tous les jours.</p>
+    </div>
+    <div class="ob-field">
+      <label>Ton message pour un jour difficile</label>
+      <textarea id="obRescueMessage" rows="4" placeholder="Ex : Souviens-toi pourquoi tu as commencé. Tu ne veux plus jamais revenir à avant."></textarea>
+    </div>
+    <div class="ob-nav">
+      <button class="btn btn-outline" onclick="obGoto('ob-habit')">← Retour</button>
       <button class="btn btn-primary" onclick="obGoto('ob-finish')">Continuer →</button>
     </div>
   </div>
@@ -377,7 +392,7 @@
       <p id="obFinishMsg">Tout est configuré. Le reste (projets, catégories, objectifs d'épargne) se construit petit à petit directement dans l'appli.</p>
     </div>
     <div class="ob-nav">
-      <button class="btn btn-outline" onclick="obGoto('ob-habit')">← Retour</button>
+      <button class="btn btn-outline" onclick="obGoto('ob-why')">← Retour</button>
       <button class="btn btn-primary" onclick="finishOnboarding()">Ouvrir l'appli →</button>
     </div>
   </div>
@@ -556,10 +571,11 @@ function obGoto(id){
 function finishOnboarding(){
   const name = document.getElementById('obName').value.trim() || "toi";
   const goal = document.getElementById('obGoal').value.trim();
+  const rescueMessage = document.getElementById('obRescueMessage').value.trim();
   let currency = document.getElementById('obCurrency').value;
   if(currency === 'CUSTOM') currency = document.getElementById('obCurrencyCustom').value.trim() || 'FCFA';
 
-  saveJSON(CFG_KEY, {name, goal, currency, createdAt:Date.now()});
+  saveJSON(CFG_KEY, {name, goal, currency, rescueMessage, createdAt:Date.now()});
 
   // première habitude
   const customVal = document.getElementById('obCustomHabit').value.trim();
@@ -711,6 +727,85 @@ function checkStreakMilestone(){
   document.getElementById('milestoneCloseBtn').onclick = close;
 }
 
+/* ---------------- Moment critique : le message de secours apparaît seulement quand c'est utile ---------------- */
+function daysBetweenKeys(a, b){
+  if(!a || !b) return 0;
+  const da = new Date(a), db = new Date(b);
+  return Math.round((db - da) / 86400000);
+}
+
+function checkRiskMoment(cfg, prevStreak){
+  const today = todayKey();
+  const shownKey = "sisu_risk_shown_v1";
+  const shown = loadJSON(shownKey, null);
+  if(shown === today) return; // déjà montré aujourd'hui, on ne dérange pas plus
+
+  const gap = daysBetweenKeys(prevStreak.lastDate, today);
+
+  let trigger = null;
+  if(gap >= 3) trigger = 'absence';
+  else if(gap === 2 && (prevStreak.count||0) > 0) trigger = 'broken';
+
+  if(!trigger){
+    // vérifie aussi si une habitude active a déjà utilisé sa grâce et n'est pas encore cochée aujourd'hui
+    const habits = diLoadHabits();
+    const log = diLoadLog();
+    const activeHabits = habits.filter(h => h.status === 'active');
+    const atRisk = activeHabits.find(h => {
+      const st = diStreakWithGrace(h, log);
+      const doneToday = log[today] && log[today][h.id];
+      return st.graceRemaining === 0 && st.streak > 0 && !doneToday;
+    });
+    if(atRisk) trigger = 'atrisk';
+  }
+
+  if(!trigger) return;
+
+  try { localStorage.setItem(shownKey, today); } catch(e){}
+
+  const messages = {
+    absence: "Ça fait quelques jours que tu n'es pas venue.",
+    broken: "Ta série a été remise à zéro hier.",
+    atrisk: "Une de tes habitudes est sur le fil aujourd'hui — plus de jour de grâce disponible."
+  };
+
+  const overlay = document.createElement('div');
+  overlay.className = 'milestone-overlay';
+
+  if(cfg.rescueMessage){
+    overlay.innerHTML = `
+      <div class="milestone-box">
+        <div style="font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin-bottom:10px;">${messages[trigger]}</div>
+        <div style="font-size:22px;margin-bottom:6px;">✋</div>
+        <div class="title" style="margin-bottom:4px;">Un message de toi, pour toi</div>
+        <div class="sub" style="font-style:italic; color:var(--ink); font-size:14px; line-height:1.6;">"${cfg.rescueMessage}"</div>
+        <button class="btn btn-primary btn-small" id="riskCloseBtn">Je reprends</button>
+      </div>`;
+  } else {
+    overlay.innerHTML = `
+      <div class="milestone-box">
+        <div style="font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin-bottom:10px;">${messages[trigger]}</div>
+        <div class="title">C'est peut-être le bon moment</div>
+        <div class="sub">Tu n'as pas encore écrit de message pour toi-même. Écris quelques mots pour la toi qui aura envie d'abandonner — il réapparaîtra la prochaine fois que ça compte.</div>
+        <textarea id="riskRescueInput" rows="3" style="width:100%;border:1px solid var(--border);border-radius:10px;padding:8px 10px;font-size:13px;margin-bottom:12px;" placeholder="Souviens-toi pourquoi tu as commencé..."></textarea>
+        <button class="btn btn-primary btn-small" id="riskSaveBtn">Enregistrer</button>
+      </div>`;
+  }
+
+  document.body.appendChild(overlay);
+  const close = () => overlay.remove();
+  overlay.onclick = (e) => { if(e.target === overlay) close(); };
+  if(cfg.rescueMessage){
+    document.getElementById('riskCloseBtn').onclick = close;
+  } else {
+    document.getElementById('riskSaveBtn').onclick = () => {
+      const val = document.getElementById('riskRescueInput').value.trim();
+      if(val){ cfg.rescueMessage = val; saveJSON(CFG_KEY, cfg); }
+      close();
+    };
+  }
+}
+
 /* ---------------- Démarrage ---------------- */
 function boot(){
   renderObHabitCatalog();
@@ -726,9 +821,11 @@ function boot(){
     initPlanning();
     initDiscipline();
     initFinances();
+    const prevStreak = loadJSON(STREAK_KEY, {count:0, lastDate:null});
     touchStreak();
     renderDashboardSummary();
     checkStreakMilestone();
+    checkRiskMoment(cfg, prevStreak);
   }
 }
 </script>
