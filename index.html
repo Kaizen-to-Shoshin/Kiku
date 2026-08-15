@@ -1959,7 +1959,7 @@ boot();
     unsubscribeSnapshot = onSnapshot(docRefFor(uid), (snap) => {
       if(!snap.exists()) return;
       const data = snap.data();
-      if((data._updatedAt || 0) < localEditTs()) return; // distant plus vieux que notre dernière modif locale : on ignore
+      if((data._updatedAt || 0) <= localEditTs()) return; // distant identique ou plus vieux que notre dernière modif locale : on ignore (évite de reconstruire l'écran et de perdre le curseur pendant la frappe)
       applyingRemote = true;
       window.__applyRemoteState(data);
       applyingRemote = false;
