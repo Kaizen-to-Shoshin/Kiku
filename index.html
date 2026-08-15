@@ -1867,6 +1867,16 @@ window.__getLocalState = function(){
 };
 window.__applyRemoteState = function(state){
   if(!state) return;
+
+  // Si la personne est en train de taper dans un champ, on ne reconstruit rien tout de suite :
+  // ça lui ferait perdre le curseur en plein milieu de la saisie. On réessaiera juste après.
+  const active = document.activeElement;
+  if(active && (active.tagName === 'INPUT' || active.tagName === 'TEXTAREA')){
+    clearTimeout(window.__pendingRemoteApply);
+    window.__pendingRemoteApply = setTimeout(() => window.__applyRemoteState(state), 1200);
+    return;
+  }
+
   if(state.config) localStorage.setItem(CFG_KEY, JSON.stringify(state.config));
   if(state.streak) localStorage.setItem(STREAK_KEY, JSON.stringify(state.streak));
   if(state.pl_projects) localStorage.setItem(PL_PROJECTS_KEY, JSON.stringify(state.pl_projects));
