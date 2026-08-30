@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kakeibo — Libérez-vous de vos dettes</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    font-family: -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+    background: #0f2318;
+    color: #1c2a1f;
+    margin: 0;
+  }
+  .hidden { display: none !important; }
+
+  .sermon {
+    min-height: 100vh;
+    background: linear-gradient(160deg, #0a1a11 0%, #163823 55%, #1d4a2c 100%);
+    color: #f6ecd2;
+    padding: 56px 20px 70px;
+    text-align: center;
+  }
+  .sermon .kanji { font-size: 14px; letter-spacing: 5px; color: #d4af37; margin-bottom: 18px; font-weight: 700; }
+  .sermon h1 { font-size: 32px; margin: 0 0 22px; line-height: 1.25; color: #f6ecd2; }
+  .sermon h1 span { color: #d4af37; }
+  .sermon .verse { font-size: 17px; line-height: 1.75; max-width: 560px; margin: 0 auto 20px; color: #e4ddc4; font-style: italic; }
+  .sermon .verse.strong { font-style: normal; font-weight: 700; color: #f6ecd2; font-size: 19px; }
+  .sermon .gold-line { width: 60px; height: 3px; background: #d4af37; margin: 30px auto; border: none; }
+  .promise { font-size: 15px; color: #16281a; background: #d4af37; border-radius: 14px; padding: 18px 20px; max-width: 560px; margin: 0 auto 34px; line-height: 1.65; font-weight: 600; }
+  .cta-main { display: inline-block; background: #f6ecd2; color: #16281a; font-weight: 800; font-size: 17px; padding: 17px 34px; border-radius: 32px; border: none; cursor: pointer; }
+  .cta-main:active { transform: scale(0.98); }
+  .sermon .small-note { font-size: 12.5px; color: #a9b8ab; margin-top: 16px; }
+
+  .wrap { max-width: 720px; margin: 0 auto; padding: 30px 16px 90px; background: #faf7ef; }
+  .intro-line { text-align: center; color: #4b5c4d; font-size: 13.5px; padding: 4px 16px 20px; }
+  .card { background: #fff; border-radius: 14px; border: 1px solid #e4ddc8; padding: 18px 20px; margin-bottom: 18px; }
+  .card h2 { font-size: 17px; margin: 0 0 4px; color: #1d4a2c; display: flex; align-items: center; gap: 8px; }
+  .card h2 .dot { width: 8px; height: 8px; border-radius: 50%; background: #d4af37; display: inline-block; }
+  .hint { font-size: 12.5px; color: #8a8a7c; margin: 0 0 14px; }
+  .row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 8px; }
+  .row.wide { grid-template-columns: 1fr; }
+  label { font-size: 12px; color: #5c5c50; display: block; margin-bottom: 3px; }
+  input[type=text], input[type=number], input[type=file], select {
+    width: 100%; padding: 9px 10px; border-radius: 8px;
+    border: 1px solid #ddd6c0; font-size: 14px; background: #fdfcf7;
+  }
+  input:focus, select:focus { outline: 2px solid #d4af37; border-color: transparent; }
+  .entry { border-top: 1px dashed #e4ddc8; padding-top: 12px; margin-top: 12px; }
+  .entry:first-of-type { border-top: none; padding-top: 0; margin-top: 0; }
+  button.add {
+    background: #f1ecd8; border: 1px dashed #b89a3f; color: #7a5d1e;
+    padding: 14px 16px; border-radius: 8px; font-size: 15px; font-weight: 600;
+    cursor: pointer; margin-top: 6px; width: 100%; touch-action: manipulation;
+  }
+  button.add:active { background: #e9e0c0; }
+  .remove { background: none; border: none; color: #a35b5b; font-size: 14px; cursor: pointer; float: right; padding: 8px; touch-action: manipulation; }
+  textarea { width: 100%; min-height: 90px; border-radius: 8px; border: 1px solid #ddd6c0; padding: 10px; font-size: 14px; background: #fdfcf7; font-family: inherit; }
+  .upload-box { border: 2px dashed #b89a3f; border-radius: 10px; padding: 16px; text-align: center; background: #fbf8ee; }
+  .upload-box p { font-size: 13px; color: #6b6b58; margin: 6px 0 0; }
+  .checkbox-row { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+  .checkbox-row input[type=checkbox] { width: 18px; height: 18px; }
+  .checkbox-row label { margin: 0; font-size: 13px; color: #5c5c50; }
+  .final-block { background: #16281a; border-radius: 16px; padding: 22px 20px; margin-top: 10px; text-align: center; }
+  .final-block p { color: #dfe8df; font-size: 14px; line-height: 1.6; margin: 0 0 16px; }
+  .btn-final { width: 100%; padding: 18px; border-radius: 14px; border: none; font-size: 16px; font-weight: 800; cursor: pointer; background: #d4af37; color: #16281a; touch-action: manipulation; }
+  .btn-final:active { transform: scale(0.99); }
+  .btn-secondary { width: 100%; margin-top: 10px; padding: 13px; border-radius: 10px; border: 1px solid #4a6350; background: transparent; color: #cfd9cf; font-size: 13.5px; cursor: pointer; }
+  .saved-msg { text-align: center; font-size: 12.5px; color: #4b7a4b; min-height: 18px; }
+  .footer-note { text-align: center; font-size: 12px; color: #8a8a7c; padding: 10px 20px 0; }
+</style>
+</head>
+<body>
+
+<div class="sermon" id="page-sermon">
+  <div class="kanji">家計簿 · KAKEIBO</div>
+  <h1>Écoutez-moi bien :<br><span>vous n'êtes pas condamné.</span></h1>
+  <p class="verse">Vous vous endettez pour rembourser. Vous remboursez pour vous endetter encore. Chaque mois, le même mur. Chaque mois, l'argent qui coule entre vos doigts sans jamais rien arranger.</p>
+  <p class="verse strong">Ce cycle a un nom. Et tout ce qui a un nom peut être brisé.</p>
+  <p class="verse">Vous n'êtes pas la première personne à porter ce poids, et vous ne le porterez pas éternellement. Il y a une sortie. Elle ne viendra pas d'un miracle — elle viendra de la vérité posée à plat, chiffre après chiffre, sans honte et sans se cacher de soi-même.</p>
+  <hr class="gold-line">
+  <p class="verse strong">Aujourd'hui, vous arrêtez de subir. Vous regardez la situation en face, une bonne fois pour toutes.</p>
+  <div class="promise">Ce bilan n'est pas un jugement, c'est un premier pas. Une fois rempli, il vous sera renvoyé sous forme d'analyse claire de votre situation, avec des pistes concrètes et réalistes pour en sortir — étape par étape, à votre rythme.</div>
+  <button class="cta-main" id="btn-start">Commencer mon bilan →</button>
+  <p class="small-note">5 à 10 minutes. Vos réponses restent privées sur votre appareil jusqu'à l'envoi.</p>
+</div>
+
+<div class="wrap hidden" id="page-form">
+  <p class="intro-line">Remplissez tranquillement, sans rien cacher — c'est ce qui rend l'analyse utile.</p>
+
+  <div class="card">
+    <h2><span class="dot"></span>Déjà un bilan existant ?</h2>
+    <p class="hint">Si vous avez déjà un fichier (Excel, PDF, photo, Word...), joignez-le ici pour ne pas tout retaper.</p>
+    <div class="upload-box">
+      <input type="file" id="existing-file">
+      <p>Il sera à joindre manuellement dans votre mail à l'étape finale.</p>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2><span class="dot"></span>1. Sources de revenus</h2>
+    <p class="hint">Location, commerce, salaire, activité annexe... une ligne par source. Montant réel perçu, pas théorique.</p>
+    <div id="incomes"></div>
+    <button class="add" type="button" id="btn-add-income">+ Ajouter une source de revenu</button>
+  </div>
+
+  <div class="card">
+    <h2><span class="dot"></span>2. Pension / salaire</h2>
+    <p class="hint">Certaines dettes sont prélevées automatiquement avant que l'argent n'arrive sur votre compte — indiquez le montant déjà déduit.</p>
+    <div class="row">
+      <div><label>Pension ou salaire brut / mois (FCFA)</label><input type="number" inputmode="numeric" id="pension"></div>
+      <div><label>Déjà prélevé automatiquement / mois (FCFA)</label><input type="number" inputmode="numeric" id="pension-deduction"></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2><span class="dot"></span>3. Dettes en cours</h2>
+    <p class="hint">Une ligne par créancier — y compris celles prélevées automatiquement sur votre pension/salaire.</p>
+    <div id="debts"></div>
+    <button class="add" type="button" id="btn-add-debt">+ Ajouter une dette</button>
+  </div>
+
+  <div class="card">
+    <h2><span class="dot"></span>4. Scolarité des enfants</h2>
+    <p class="hint">Certains frais ne sont pas mensuels — précisez la fréquence.</p>
+    <div id="schools"></div>
+    <button class="add" type="button" id="btn-add-school">+ Ajouter un enfant / école</button>
+  </div>
+
+  <div class="card">
+    <h2><span class="dot"></span>5. Charges fixes mensuelles</h2>
+    <div class="row"><div><label>Eau (FCFA)</label><input type="number" inputmode="numeric" id="charge-eau"></div>
+    <div><label>Électricité (FCFA)</label><input type="number" inputmode="numeric" id="charge-elec"></div></div>
+    <div class="row"><div><label>Nourriture (FCFA)</label><input type="number" inputmode="numeric" id="charge-nourriture"></div>
+    <div><label>Transport des enfants (FCFA)</label><input type="number" inputmode="numeric" id="charge-transport"></div></div>
+    <div class="row"><div><label>Charges voiture</label><input type="number" inputmode="numeric" id="charge-voiture"></div>
+    <div><label>Autre charge</label><input type="number" inputmode="numeric" id="charge-autre"></div></div>
+  </div>
+
+  <div class="card">
+    <h2><span class="dot"></span>6. Notes libres</h2>
+    <textarea id="notes"></textarea>
+  </div>
+
+  <div class="saved-msg" id="saved-msg"></div>
+
+  <div class="final-block">
+    <p>En envoyant ce bilan, vous recevrez une analyse de votre situation financière et des solutions concrètes, réalistes, adaptées à ce que vous m'aurez confié — pas des conseils génériques.</p>
+    <button class="btn-final" type="button" id="btn-mail">Libérez-vous de vos dettes →</button>
+    <button class="btn-secondary" type="button" id="btn-copy">Copier le résumé à la place</button>
+  </div>
+  <p class="footer-note">Le bouton ouvre votre appli mail avec le résumé pré-rempli. Si vous avez joint un fichier existant, ajoutez-le manuellement en pièce jointe avant d'envoyer.</p>
+</div>
+
+<script>
+function incomeEntry(data={}) {
+  const d = document.createElement('div');
+  d.className = 'entry income-entry';
+  d.innerHTML = `
+    <button class="remove" type="button" data-remove="1">supprimer</button>
+    <div class="row">
+      <div><label>Type de revenu</label>
+        <select class="i-type">
+          <option value="Location" ${data.type==='Location'?'selected':''}>Location</option>
+          <option value="Commerce" ${data.type==='Commerce'?'selected':''}>Commerce</option>
+          <option value="Salaire" ${data.type==='Salaire'?'selected':''}>Salaire</option>
+          <option value="Activité annexe" ${data.type==='Activité annexe'?'selected':''}>Activité annexe</option>
+          <option value="Autre" ${data.type==='Autre'?'selected':''}>Autre</option>
+        </select>
+      </div>
+      <div><label>Détail (ex: nom du bien, activité)</label><input type="text" class="i-name" value="${data.name||''}"></div>
+    </div>
+    <div class="row">
+      <div><label>Montant dû / attendu / mois</label><input type="number" inputmode="numeric" class="i-due" value="${data.due||''}"></div>
+      <div><label>Montant réellement perçu / mois</label><input type="number" inputmode="numeric" class="i-paid" value="${data.paid||''}"></div>
+    </div>
+    <div class="row wide"><label>Retard moyen de paiement (jours, si applicable)</label><input type="number" inputmode="numeric" class="i-delay" value="${data.delay||''}"></div>
+  `;
+  return d;
+}
+function debtEntry(data={}) {
+  const d = document.createElement('div');
+  d.className = 'entry';
+  d.innerHTML = `
+    <button class="remove" type="button" data-remove="1">supprimer</button>
+    <div class="row wide"><label>Créancier</label><input type="text" class="d-name" value="${data.name||''}"></div>
+    <div class="row">
+      <div><label>Montant restant</label><input type="number" inputmode="numeric" class="d-amount" value="${data.amount||''}"></div>
+      <div><label>Échéance / mois</label><input type="number" inputmode="numeric" class="d-monthly" value="${data.monthly||''}"></div>
+    </div>
+    <div class="row wide"><label>Taux / pénalité</label><input type="text" class="d-rate" value="${data.rate||''}"></div>
+    <div class="checkbox-row">
+      <input type="checkbox" class="d-auto" ${data.auto?'checked':''}>
+      <label>Prélevée automatiquement sur pension/salaire avant réception</label>
+    </div>
+  `;
+  return d;
+}
+function schoolEntry(data={}) {
+  const d = document.createElement('div');
+  d.className = 'entry';
+  d.innerHTML = `
+    <button class="remove" type="button" data-remove="1">supprimer</button>
+    <div class="row wide"><label>Enfant / école</label><input type="text" class="s-name" value="${data.name||''}"></div>
+    <div class="row">
+      <div><label>Montant</label><input type="number" inputmode="numeric" class="s-amount" value="${data.amount||''}"></div>
+      <div><label>Fréquence</label><input type="text" class="s-freq" placeholder="mensuel / trimestre / annuel" value="${data.freq||''}"></div>
+    </div>
+    <div class="row wide"><label>Prochaine échéance</label><input type="text" class="s-next" value="${data.next||''}"></div>
+  `;
+  return d;
+}
+const incomesEl = document.getElementById('incomes');
+const debtsEl = document.getElementById('debts');
+const schoolsEl = document.getElementById('schools');
+
+function addIncome(data) { incomesEl.appendChild(incomeEntry(data||{})); attachSave(); save(); }
+function addDebt(data) { debtsEl.appendChild(debtEntry(data||{})); attachSave(); save(); }
+function addSchool(data) { schoolsEl.appendChild(schoolEntry(data||{})); attachSave(); save(); }
+
+function attachSave() {
+  document.querySelectorAll('input, textarea, select').forEach(el => { el.oninput = save; el.onchange = save; });
+}
+
+function collect() {
+  const incomes = [...incomesEl.querySelectorAll('.income-entry')].map(e => ({
+    type: e.querySelector('.i-type').value, name: e.querySelector('.i-name').value,
+    due: e.querySelector('.i-due').value, paid: e.querySelector('.i-paid').value,
+    delay: e.querySelector('.i-delay').value,
+  }));
+  const debts = [...debtsEl.children].map(e => ({
+    name: e.querySelector('.d-name').value, amount: e.querySelector('.d-amount').value,
+    monthly: e.querySelector('.d-monthly').value, rate: e.querySelector('.d-rate').value,
+    auto: e.querySelector('.d-auto').checked,
+  }));
+  const schools = [...schoolsEl.children].map(e => ({
+    name: e.querySelector('.s-name').value, amount: e.querySelector('.s-amount').value,
+    freq: e.querySelector('.s-freq').value, next: e.querySelector('.s-next').value,
+  }));
+  return {
+    incomes, debts, schools,
+    pension: document.getElementById('pension').value,
+    pensionDeduction: document.getElementById('pension-deduction').value,
+    chargeEau: document.getElementById('charge-eau').value,
+    chargeElec: document.getElementById('charge-elec').value,
+    chargeNourriture: document.getElementById('charge-nourriture').value,
+    chargeTransport: document.getElementById('charge-transport').value,
+    chargeVoiture: document.getElementById('charge-voiture').value,
+    chargeAutre: document.getElementById('charge-autre').value,
+    notes: document.getElementById('notes').value,
+  };
+}
+
+let saveTimeout;
+function save() {
+  try {
+    localStorage.setItem('kakeibo-data', JSON.stringify(collect()));
+    const msg = document.getElementById('saved-msg');
+    msg.textContent = 'Enregistré';
+    clearTimeout(saveTimeout);
+    saveTimeout = setTimeout(() => msg.textContent = '', 1500);
+  } catch(e) {}
+}
+
+function load() {
+  let data = {};
+  try { data = JSON.parse(localStorage.getItem('kakeibo-data') || '{}'); } catch(e) {}
+  (data.incomes && data.incomes.length ? data.incomes : [{}]).forEach(i => addIncome(i));
+  (data.debts && data.debts.length ? data.debts : [{}]).forEach(d => addDebt(d));
+  (data.schools && data.schools.length ? data.schools : [{}]).forEach(s => addSchool(s));
+  document.getElementById('pension').value = data.pension || '';
+  document.getElementById('pension-deduction').value = data.pensionDeduction || '';
+  document.getElementById('charge-eau').value = data.chargeEau || '';
+  document.getElementById('charge-elec').value = data.chargeElec || '';
+  document.getElementById('charge-nourriture').value = data.chargeNourriture || '';
+  document.getElementById('charge-transport').value = data.chargeTransport || '';
+  document.getElementById('charge-voiture').value = data.chargeVoiture || '';
+  document.getElementById('charge-autre').value = data.chargeAutre || '';
+  document.getElementById('notes').value = data.notes || '';
+  attachSave();
+}
+
+function buildSummary() {
+  const d = collect();
+  let lines = [];
+  lines.push('=== BILAN FINANCIER — KAKEIBO ===\n');
+  lines.push('-- Sources de revenus --');
+  d.incomes.forEach((i,idx) => lines.push(`${i.type||'Revenu'} ${i.name?'('+i.name+')':idx+1} : dû/attendu ${i.due||0} FCFA, perçu ${i.paid||0} FCFA, retard moyen ${i.delay||0} jours`));
+  lines.push('\n-- Pension / salaire --');
+  lines.push(`Brut : ${d.pension||0} FCFA/mois`);
+  lines.push(`Déjà prélevé automatiquement : ${d.pensionDeduction||0} FCFA/mois`);
+  lines.push('\n-- Dettes --');
+  d.debts.forEach(x => lines.push(`${x.name||'Créancier'} : reste ${x.amount||0} FCFA, taux/pénalité ${x.rate||'non précisé'}, échéance ${x.monthly||0} FCFA/mois${x.auto ? ' [prélevée automatiquement]' : ''}`));
+  lines.push('\n-- Scolarité --');
+  d.schools.forEach(s => lines.push(`${s.name||'Enfant'} : ${s.amount||0} FCFA, fréquence ${s.freq||'non précisée'}, prochaine échéance ${s.next||'non précisée'}`));
+  lines.push('\n-- Charges fixes --');
+  lines.push(`Eau : ${d.chargeEau||0} FCFA`);
+  lines.push(`Électricité : ${d.chargeElec||0} FCFA`);
+  lines.push(`Nourriture : ${d.chargeNourriture||0} FCFA`);
+  lines.push(`Transport des enfants : ${d.chargeTransport||0} FCFA`);
+  lines.push(`Charges voiture : ${d.chargeVoiture||0} FCFA`);
+  if (d.chargeAutre) lines.push(`Autre : ${d.chargeAutre} FCFA`);
+  if (d.notes) { lines.push('\n-- Notes --'); lines.push(d.notes); }
+  const fileInput = document.getElementById('existing-file');
+  if (fileInput && fileInput.files.length) {
+    lines.push('\n-- Fichier existant joint --');
+    lines.push(`(à joindre manuellement : ${fileInput.files[0].name})`);
+  }
+  return lines.join('\n');
+}
+
+function fallbackCopy(text, cb) {
+  const ta = document.createElement('textarea');
+  ta.value = text; ta.style.position = 'fixed'; ta.style.top = '-1000px';
+  document.body.appendChild(ta); ta.focus(); ta.select();
+  try { document.execCommand('copy'); cb(); } catch(e) {}
+  document.body.removeChild(ta);
+}
+
+function copyText() {
+  const text = buildSummary();
+  const msg = document.getElementById('saved-msg');
+  function ok() {
+    msg.textContent = 'Résumé copié';
+    clearTimeout(saveTimeout);
+    saveTimeout = setTimeout(() => msg.textContent = '', 2500);
+  }
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(text).then(ok).catch(() => fallbackCopy(text, ok));
+  } else { fallbackCopy(text, ok); }
+}
+
+function sendMail() {
+  const summary = buildSummary();
+  const subject = encodeURIComponent('Mon bilan financier — Kakeibo');
+  const shortBody = encodeURIComponent('Bonjour,\n\nVoici mon bilan financier (voir texte collé ci-dessous ou copié dans le presse-papier) :\n\n' + summary).slice(0, 1800);
+
+  function openMail() {
+    const link = document.createElement('a');
+    link.href = `mailto:best_dev@outlook.com?subject=${subject}&body=${shortBody}`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  }
+
+  const msg = document.getElementById('saved-msg');
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(summary).then(function() {
+      msg.textContent = 'Résumé copié — ouverture de votre appli mail...';
+      openMail();
+    }).catch(function() {
+      openMail();
+    });
+  } else {
+    fallbackCopy(summary, function() {});
+    openMail();
+  }
+
+  setTimeout(function() {
+    msg.textContent = 'Si le mail ne s\'est pas ouvert, appuyez sur "Copier le résumé" et collez-le dans un mail à best_dev@outlook.com';
+  }, 2500);
+}
+
+function handleRemove(e) {
+  if (e.target && e.target.getAttribute('data-remove')) {
+    e.target.closest('.entry').remove();
+    save();
+  }
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+  load();
+  document.getElementById('btn-start').addEventListener('click', function() {
+    document.getElementById('page-sermon').classList.add('hidden');
+    document.getElementById('page-form').classList.remove('hidden');
+    window.scrollTo(0,0);
+  });
+  document.getElementById('btn-add-income').addEventListener('click', function() { addIncome(); });
+  document.getElementById('btn-add-debt').addEventListener('click', function() { addDebt(); });
+  document.getElementById('btn-add-school').addEventListener('click', function() { addSchool(); });
+  document.getElementById('btn-mail').addEventListener('click', sendMail);
+  document.getElementById('btn-copy').addEventListener('click', copyText);
+  document.getElementById('incomes').addEventListener('click', handleRemove);
+  document.getElementById('debts').addEventListener('click', handleRemove);
+  document.getElementById('schools').addEventListener('click', handleRemove);
+});
+</script>
+</body>
+</html>
